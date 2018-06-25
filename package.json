@@ -17,7 +17,9 @@
   "dependencies": {
     "bip39": "^2.5.0",
     "compose-funcs": "^1.0.0",
+    "eth-block-tracker": "^4.0.1",
     "ethers": "^3.0.24",
+    "ethjs-provider-http": "^0.1.6",
     "web3": "^1.0.0-beta.34"
   },
   "devDependencies": {

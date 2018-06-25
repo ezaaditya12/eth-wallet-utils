@@ -1,6 +1,8 @@
-import Network from 'ETHBlock/network';
 import Web3 from 'web3';
 import compose from 'compose-funcs';
+import Network from 'ETHBlock/network';
+import HttpProvider from 'ethjs-provider-http';
+import PollingBlockTracker from 'eth-block-tracker';
 
 const log = console.log;
 const create = c => arg => new c(arg);
@@ -28,15 +30,38 @@ class ETHBlock {
 
   static watch({ blockCb, txCb } = {}) {
     const web3 = ETHBlock.init();
-    const listener = web3.eth.subscribe('latest', (err, result) => {
-      if (err) throw BlockErr('Fail to subscribe \'latest\' event');
-      log(result);
+
+    const getBlockTracker = compose(
+      create(PollingBlockTracker),
+      provider => ({provider}),
+      create(HttpProvider),
+      Network.getNetwork
+    );
+    
+    const blockTracker = getBlockTracker();
+    
+    blockTracker.on('latest', blockHex => {
+      const newBlock = web3.utils.hexToNumber(blockHex);
+      log('[newBlock]', newBlock);
+      
+      blockCb && blockCb(newBlock);
+
+      web3.eth.getBlock(newBlock).then(async block => {
+        const { transactions: txIds } = block;
+        const txs = await Promise.all(txIds.map(txId => web3.eth.getTransaction(txId)));
+        log('[txs]', txs);
+        txCb && txCb(txs);
+      });
     });
 
-    listener.on('data', result => {
-      log(result);
-    });
+    return blockTracker;
+  }
+
+  static unWatch(tracker){
+    log('[unWatch] Remove tracker unimplemented');
   }
 }
 
 export default ETHBlock;
+
+ETHBlock.watch();
