@@ -33,7 +33,8 @@ class ETHBlock {
 
     const getBlockTracker = compose(
       create(PollingBlockTracker),
-      provider => ({provider}),
+      //@see: https://github.com/MetaMask/eth-block-tracker#methods
+      provider => ({provider, keepEventLoopActive: false}),
       create(HttpProvider),
       Network.getNetwork
     );
@@ -54,11 +55,14 @@ class ETHBlock {
       });
     });
 
+    blockTracker.on('error', log.bind(null, '[blockTracker][ERR]'));
+
     return blockTracker;
   }
 
   static unWatch(tracker){
-    log('[unWatch] Remove tracker unimplemented');
+    if(!tracker) return;
+    tracker.unref && tracker.unref();
   }
 }
 

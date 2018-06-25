@@ -1,7 +1,17 @@
 const createWeb3 = {
   case1: {
-    version: ''
+    apiKey: 'version',
+    versionAPI: /1.0/
   }
 };
 
-export { createWeb3 };
+const watchBlock = {
+  case1: {
+    oldBlock: 3510386
+  }
+};
+
+export { 
+  createWeb3,
+  watchBlock
+};
