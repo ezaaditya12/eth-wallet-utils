@@ -5,22 +5,30 @@
     "node": ">= 8.11.x"
   },
   "scripts": {
+    "setup": "export NODE_PATH=src",
     "start": "npm run build && pm2 start pm2-depositor.json",
     "dev": "node -r @babel/register src/daemon.js",
     "format": "lint-staged",
     "call": "node -r @babel/register",
     "build": "babel src --out-dir=dist",
-    "pm2": "npm run build && pm2 start pm2-depositor.json"
+    "pm2": "npm run build && pm2 start pm2-depositor.json",
+    "test": "jest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "ethers": "^3.0.24",
+    "mngen": "^1.1.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.47",
     "@babel/core": "^7.0.0-beta.47",
     "@babel/preset-env": "^7.0.0-beta.47",
     "@babel/register": "^7.0.0-beta.47",
+    "babel-core": "^7.0.0-0",
     "babel-eslint": "^8.2.5",
+    "babel-jest": "^23.0.1",
     "eslint": "^4.18.2",
     "husky": "^0.13.4",
+    "jest": "^23.1.0",
     "lint-staged": "^4.0.0",
     "prettier": "^1.4.4"
   },
@@ -85,5 +93,8 @@
       ]
     },
     "globals": {}
+  },
+  "jest": {
+    "testPathIgnorePatterns": ["test-cases.js"]
   }
 }
