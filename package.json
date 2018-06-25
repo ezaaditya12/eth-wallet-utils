@@ -33,16 +33,7 @@
     "prettier": "^1.4.4"
   },
   "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": "8.11"
-          }
-        }
-      ]
-    ]
+    "presets": ["@babel/preset-env"]
   },
   "lint-staged": {
     "*.js": [
@@ -95,6 +86,11 @@
     "globals": {}
   },
   "jest": {
-    "testPathIgnorePatterns": ["test-cases.js"]
+    "testPathIgnorePatterns": [
+      "test-cases.js"
+    ],
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   }
 }
