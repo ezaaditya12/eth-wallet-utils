@@ -1,0 +1,8 @@
+# Common
+.vscode
+.idea
+tmp
+.env
+node_modules
+.ide
+*.log

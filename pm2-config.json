@@ -1,0 +1,8 @@
+{
+  "apps":[
+    {
+      "name":"DepositorServer",
+      "script":"dist/daemon.js"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "name": "eth-utils",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">= 8.11.x"
+  },
+  "scripts": {
+    "start": "npm run build && pm2 start pm2-depositor.json",
+    "dev": "node -r @babel/register src/daemon.js",
+    "format": "lint-staged",
+    "call": "node -r @babel/register",
+    "build": "babel src --out-dir=dist",
+    "pm2": "npm run build && pm2 start pm2-depositor.json"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.47",
+    "@babel/core": "^7.0.0-beta.47",
+    "@babel/preset-env": "^7.0.0-beta.47",
+    "@babel/register": "^7.0.0-beta.47",
+    "babel-eslint": "^8.2.5",
+    "eslint": "^4.18.2",
+    "husky": "^0.13.4",
+    "lint-staged": "^4.0.0",
+    "prettier": "^1.4.4"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "8.11"
+          }
+        }
+      ]
+    ]
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write --single-quote --print-width 120",
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true,
+      "es6": true,
+      "jest": true,
+      "jasmine": true
+    },
+    "extends": [
+      "eslint:recommended"
+    ],
+    "parser": "babel-eslint",
+    "rules": {
+      "indent": [
+        "warn",
+        2,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "quotes": [
+        "warn",
+        "single"
+      ],
+      "semi": [
+        "warn",
+        "always"
+      ],
+      "no-var": [
+        "warn"
+      ],
+      "no-console": [
+        "off"
+      ],
+      "no-unused-vars": [
+        "warn"
+      ],
+      "no-mixed-spaces-and-tabs": [
+        "warn"
+      ]
+    },
+    "globals": {}
+  }
+}
