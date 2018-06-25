@@ -1,4 +1,4 @@
-import { MnemonicError } from 'HDWallet';
+import { MnemonicErr } from 'HDWallet';
 
 const createCases = {
   case1: {
@@ -8,7 +8,7 @@ const createCases = {
   },
   invalid: {
     mnemonic: 'forces test results output highlighting',
-    Error: MnemonicError
+    Error: MnemonicErr
   }
 };
 
@@ -20,7 +20,4 @@ const generateCases = {
   }
 };
 
-export {
-  createCases,
-  generateCases
-};
+export { createCases, generateCases };

@@ -5,15 +5,9 @@ import { HDNode, Wallet } from 'ethers';
 
 const log = console.log;
 
-class MnemonicError extends Error {
+class MnemonicErr extends Error {
   constructor(message) {
-    super(
-      [
-        `[MnemonicError][ERR] ${message}.`,
-        'Note: mnemonic phrase should be 12 words and implement BIP39.'
-      ].join(os.EOL),
-      1
-    );
+    super(`[MnemonicErr] ${message}`, 1);
     // Saving class name in the property
     // Capturing stack trace
     this.name = this.constructor.name;
@@ -38,7 +32,10 @@ class HDWallet {
 
   static fromMnemonic(mnemonic) {
     if (!BIP39.validateMnemonic(mnemonic))
-      throw new MnemonicError('Invalid mnemonic');
+      throw new MnemonicErr(
+        'Invalid mnemonic. ' +
+          'Note: mnemonic phrase should be 12 words and implement BIP39.'
+      );
 
     return HDNode.fromMnemonic(mnemonic);
   }
@@ -60,4 +57,4 @@ class HDWallet {
 }
 
 export default HDWallet;
-export { MnemonicError };
+export { MnemonicErr };
