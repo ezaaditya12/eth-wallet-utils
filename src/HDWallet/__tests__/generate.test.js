@@ -1,17 +1,23 @@
 import HDWallet from 'HDWallet';
-import { Wallet } from 'ethers';
-import { createCases as cases } from './test-cases';
+import { generateCases as tests } from './test-cases';
+import compose from 'compose-funcs';
 
 const log = console.log;
 
 describe('Generate Child Wallet', () => {
   it('Should generate success with mnemonic phrase', () => {
-    const hdWallet = HDWallet.fromMnemonic(cases.success.mnemonic);
-    const address = new Wallet(hdWallet.privateKey).getAddress();
+    const masterNode = HDWallet.fromMnemonic(tests.case1.mnemonic);
+    const childAdrArr = HDWallet.generate({ offset: 0, limit: 10 })(masterNode);
+    expect(childAdrArr[0]).toBe(tests.case1.firstChildAddress);
+  });
 
-    const childAddressArr = HDWallet.generate({from: 0, total: 10})(hdWallet);
-    log('[childAddressArr]', childAddressArr);
-
-    expect(address).toBe('0xE6EA8442BD58A0241a50f088eDEb5a0C99bfA888');
+  it('Should generate success as chain method', () => {
+    const mnemonic = tests.case1.mnemonic;
+    const generateFromMnemonic = compose(
+      HDWallet.generate({ offset: 0, limit: 10 }),
+      HDWallet.fromMnemonic
+    );
+    const childAdrArr = generateFromMnemonic(mnemonic);
+    expect(childAdrArr[0]).toBe(tests.case1.firstChildAddress);
   });
 });

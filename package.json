@@ -15,6 +15,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "compose-funcs": "^1.0.0",
     "ethers": "^3.0.24",
     "mngen": "^1.1.0"
   },
@@ -23,7 +24,7 @@
     "@babel/core": "^7.0.0-beta.47",
     "@babel/preset-env": "^7.0.0-beta.47",
     "@babel/register": "^7.0.0-beta.47",
-    "babel-core": "^7.0.0-0",
+    "babel-core": "^7.0.0-0-beta.47",
     "babel-eslint": "^8.2.5",
     "babel-jest": "^23.0.1",
     "eslint": "^4.18.2",
@@ -33,7 +34,16 @@
     "prettier": "^1.4.4"
   },
   "babel": {
-    "presets": ["@babel/preset-env"]
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "8.11"
+          }
+        }
+      ]
+    ]
   },
   "lint-staged": {
     "*.js": [
@@ -86,11 +96,11 @@
     "globals": {}
   },
   "jest": {
-    "testPathIgnorePatterns": [
-      "test-cases.js"
-    ],
     "transform": {
       "^.+\\.jsx?$": "babel-jest"
-    }
+    },
+    "testPathIgnorePatterns": [
+      "test-cases.js"
+    ]
   }
 }
