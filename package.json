@@ -22,11 +22,12 @@
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.47",
     "@babel/core": "^7.0.0-beta.47",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.51",
     "@babel/preset-env": "^7.0.0-beta.47",
     "@babel/register": "^7.0.0-beta.47",
+    "babel-7-jest": "^21.3.3",
     "babel-core": "^7.0.0-0-beta.47",
     "babel-eslint": "^8.2.5",
-    "babel-jest": "^23.0.1",
     "eslint": "^4.18.2",
     "husky": "^0.13.4",
     "jest": "^23.1.0",
@@ -43,7 +44,8 @@
           }
         }
       ]
-    ]
+    ],
+    "plugins": ["@babel/plugin-proposal-class-properties"]
   },
   "lint-staged": {
     "*.js": [
@@ -97,7 +99,7 @@
   },
   "jest": {
     "transform": {
-      "^.+\\.jsx?$": "babel-jest"
+      "^.+\\.jsx?$": "babel-7-jest"
     },
     "testPathIgnorePatterns": [
       "test-cases.js"

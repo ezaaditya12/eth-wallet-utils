@@ -1,7 +1,7 @@
-import { HDNode, Wallet } from 'ethers';
+import os from 'os';
 import BIP39 from 'bip39';
 import compose from 'compose-funcs';
-import os from 'os';
+import { HDNode, Wallet } from 'ethers';
 
 const log = console.log;
 
@@ -22,12 +22,7 @@ class MnemonicError extends Error {
 }
 
 class HDWallet {
-  static fromMnemonic(mnemonic) {
-    if (!BIP39.validateMnemonic(mnemonic))
-      throw new MnemonicError('Invalid mnemonic');
-
-    return HDNode.fromMnemonic(mnemonic);
-  }
+  static BIP44 = 'm/44\'/60\'/0\'/0';
 
   static generate({ offset, limit }) {
     return masterNode =>
@@ -39,6 +34,13 @@ class HDWallet {
           const wallet = new Wallet(childNode.privateKey);
           return wallet.address;
         });
+  }
+
+  static fromMnemonic(mnemonic) {
+    if (!BIP39.validateMnemonic(mnemonic))
+      throw new MnemonicError('Invalid mnemonic');
+
+    return HDNode.fromMnemonic(mnemonic);
   }
 
   static newMnemonic() {
@@ -56,8 +58,6 @@ class HDWallet {
     return new Wallet(hdWallet.privateKey).address;
   }
 }
-
-HDWallet.BIP44 = 'm/44\'/60\'/0\'/0';
 
 export default HDWallet;
 export { MnemonicError };
