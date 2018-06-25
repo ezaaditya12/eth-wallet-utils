@@ -15,9 +15,9 @@
     "test": "jest"
   },
   "dependencies": {
+    "bip39": "^2.5.0",
     "compose-funcs": "^1.0.0",
-    "ethers": "^3.0.24",
-    "mngen": "^1.1.0"
+    "ethers": "^3.0.24"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.47",
@@ -47,7 +47,7 @@
   },
   "lint-staged": {
     "*.js": [
-      "prettier --write --single-quote --print-width 120",
+      "prettier --write --single-quote --print-width 80",
       "eslint --fix",
       "git add"
     ]
