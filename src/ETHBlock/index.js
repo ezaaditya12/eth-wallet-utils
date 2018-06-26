@@ -34,35 +34,37 @@ class ETHBlock {
     const getBlockTracker = compose(
       create(PollingBlockTracker),
       //@see: https://github.com/MetaMask/eth-block-tracker#methods
-      provider => ({provider, keepEventLoopActive: false}),
+      provider => ({ provider, keepEventLoopActive: false }),
       create(HttpProvider),
       Network.getNetwork
     );
-    
+
     const blockTracker = getBlockTracker();
-    
+
     blockTracker.on('latest', blockHex => {
       const newBlock = web3.utils.hexToNumber(blockHex);
       log('[newBlock]', newBlock);
-      
+
       blockCb && blockCb(newBlock);
 
       web3.eth.getBlock(newBlock).then(async block => {
         const { transactions: txIds } = block;
-        const txs = await Promise.all(txIds.map(txId => web3.eth.getTransaction(txId)));
-        log('[txs]', txs);
+        const txs = await Promise.all(
+          txIds.map(txId => web3.eth.getTransaction(txId))
+        );
+        // log('[txs]', txs);
         txCb && txCb(txs);
       });
     });
 
-    blockTracker.on('error', log.bind(null, '[blockTracker][ERR]'));
+    blockTracker.on('error', () => log('[blockTracker][ERR]'));
 
     return blockTracker;
   }
 
-  static unWatch(tracker){
-    if(!tracker) return;
-    tracker.unref && tracker.unref();
+  static unWatch(tracker) {
+    if (!tracker) return;
+    tracker._maybeEnd();
   }
 }
 

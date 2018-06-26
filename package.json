@@ -5,7 +5,7 @@
     "node": ">= 8.11.x"
   },
   "scripts": {
-    "setup": "export NODE_PATH=src",
+    "setup": "echo 'Please run: source .ethrc'",
     "start": "npm run build && pm2 start pm2-depositor.json",
     "dev": "node -r @babel/register src/daemon.js",
     "format": "lint-staged",
@@ -20,6 +20,7 @@
     "eth-block-tracker": "^4.0.1",
     "ethers": "^3.0.24",
     "ethjs-provider-http": "^0.1.6",
+    "redux": "^4.0.0",
     "web3": "^1.0.0-beta.34"
   },
   "devDependencies": {
@@ -106,6 +107,7 @@
     "transform": {
       "^.+\\.jsx?$": "babel-7-jest"
     },
+    "verbose": true,
     "testPathIgnorePatterns": [
       "test-cases.js"
     ]
