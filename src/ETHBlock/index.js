@@ -1,11 +1,20 @@
 import Web3 from 'web3';
 import compose from 'compose-funcs';
-import Network from 'ETHBlock/network';
 import HttpProvider from 'ethjs-provider-http';
-import PollingBlockTracker from 'eth-block-tracker';
+import BlockTracker from 'eth-block-tracker';
+
+import Network from 'ETHBlock/network';
+import { composeAsync } from 'core/compose';
 
 const log = console.log;
-const create = c => arg => new c(arg);
+const create = C => (...arg) => new C(...arg);
+const silentErr = cb => (...args) => {
+  try {
+    return cb && cb(...args);
+  } catch (err) {
+    log('[silentErr]', err.message);
+  }
+};
 
 class BlockErr extends Error {
   constructor(message) {
@@ -28,38 +37,39 @@ class ETHBlock {
     )();
   }
 
-  static watch({ blockCb, txCb } = {}) {
-    const web3 = ETHBlock.init();
-
+  static watch({ blockCb: _cb1, txCb: cb2 } = {}) {
     const getBlockTracker = compose(
-      create(PollingBlockTracker),
-      //@see: https://github.com/MetaMask/eth-block-tracker#methods
-      provider => ({ provider, keepEventLoopActive: false }),
+      provider => create(BlockTracker)({ provider }),
       create(HttpProvider),
       Network.getNetwork
     );
 
     const blockTracker = getBlockTracker();
+    const blockCb = silentErr(_cb1);
+    const txCb = silentErr(cb2);
 
-    blockTracker.on('latest', blockHex => {
-      const newBlock = web3.utils.hexToNumber(blockHex);
-      log('[newBlock]', newBlock);
-
-      blockCb && blockCb(newBlock);
-
-      web3.eth.getBlock(newBlock).then(async block => {
-        const { transactions: txIds } = block;
-        const txs = await Promise.all(
-          txIds.map(txId => web3.eth.getTransaction(txId))
-        );
-        // log('[txs]', txs);
-        txCb && txCb(txs);
-      });
-    });
-
-    blockTracker.on('error', () => log('[blockTracker][ERR]'));
+    blockTracker.on('latest', ETHBlock.handleNewBlock({ blockCb, txCb }));
+    blockTracker.on('error', ETHBlock.handleTrackErr);
 
     return blockTracker;
+  }
+
+  static handleTrackErr() {
+    log('[blockTracker][ERR]');
+  }
+
+  static handleNewBlock({ blockCb, txCb }) {
+    const { eth, utils } = ETHBlock.init();
+
+    return async blockHex => {
+      const newBlock = utils.hexToNumber(blockHex);
+      const block = await eth.getBlock(newBlock);
+      const { transactions: txIds, hash } = block;
+      log('[handleNewBlock] txIds, hash', txIds, hash);
+
+      blockCb(newBlock, hash);
+      await Promise.all(txIds.map(composeAsync(eth.getTransaction, txCb)));
+    };
   }
 
   static unWatch(tracker) {

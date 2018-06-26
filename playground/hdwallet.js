@@ -1,5 +1,7 @@
 import compose from 'compose-funcs';
 
+import { composeAsync } from 'core/compose';
+
 // const hdkey = require('ethereumjs-wallet/hdkey');
 // const bip39 = require('bip39');
 // const mnemonic = 'unknown seed kit come final jacket final protect wedding inquiry spin silver';
@@ -15,3 +17,9 @@ import compose from 'compose-funcs';
 const lx = compose(r => console.log(r));
 
 lx('[Got it]');
+
+const getAsync = () => new Promise(r => setTimeout(() => r('Got list'), 1000));
+
+const fAsync = composeAsync(console.log, getAsync);
+
+fAsync();

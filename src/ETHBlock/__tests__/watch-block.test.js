@@ -31,12 +31,14 @@ describe('Watch Latest Block', () => {
       testExpect
     );
 
+    const txCb = console.log;
+
     const runTrack = compose(
       tracker => setState({ tracker }),
-      blockCb => ETHBlock.watch({ blockCb })
+      ETHBlock.watch
     );
 
-    runTrack(blockCb);
+    runTrack({ blockCb, txCb });
   });
 
   afterAll(
