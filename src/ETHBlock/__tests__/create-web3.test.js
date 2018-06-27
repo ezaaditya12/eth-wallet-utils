@@ -1,7 +1,7 @@
 import ETHBlock from 'ETHBlock';
-import {createWeb3 as test} from './test-cases';
+import { createWeb3 as test } from './test-cases';
 
-const log = console.log;
+import { log } from 'core/helpers';
 
 describe('Init Web3 Instance', () => {
   it('Should init successfully', () => {

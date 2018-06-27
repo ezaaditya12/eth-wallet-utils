@@ -1,15 +1,12 @@
-import os from 'os';
 import BIP39 from 'bip39';
 import compose from 'compose-funcs';
 import { HDNode, Wallet } from 'ethers';
 
-const log = console.log;
+import { log } from 'core/helpers';
 
 class MnemonicErr extends Error {
   constructor(message) {
     super(`[MnemonicErr] ${message}`, 1);
-    // Saving class name in the property
-    // Capturing stack trace
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
   }

@@ -2,7 +2,7 @@ import HDWallet from 'HDWallet';
 import { createCases as tests } from './test-cases';
 import compose from 'compose-funcs';
 
-const log = console.log;
+import { log } from 'core/helpers';
 
 describe('Create HD Wallet', () => {
   it('Should support create mnemonic', () => {

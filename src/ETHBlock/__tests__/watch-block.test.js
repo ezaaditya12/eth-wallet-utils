@@ -1,50 +1,53 @@
-import { createStore } from 'redux';
-import compose from 'compose-funcs';
+import Web3 from 'web3';
 
 import ETHBlock from 'ETHBlock';
-import createTinyStore from 'core/store';
-import { watchBlock as test } from './test-cases';
-
-const log = console.log;
+import { watchBlock as test } from 'ETHBlock/__tests__/test-cases';
+import { log, delay } from 'core/helpers';
 
 describe('Watch Latest Block', () => {
-  /**
-   * Setup data before test
-   */
-  const initState = {
-    tracker: null
-  };
+  const case1 = test.case1;
 
-  const { getKey, setState } = createTinyStore(initState);
+  it(
+    'Should watch block successfully',
+    done => {
+      const expectBlockCbParams = ({ height, hash }) => {
+        expect(typeof height).toBe('number');
+        expect(height).toBeGreaterThan(case1.oldBlock);
+        expect(hash.length).toBe(case1.HASH_LENGTH);
+      };
 
-  /**
-   * Start test cases
-   */
-  it('Should get new block successfully', done => {
-    const testExpect = blockNo => {
-      expect(typeof blockNo).toBe('number');
-      expect(blockNo).toBeGreaterThan(test.case1.oldBlock);
-    };
+      const expectTxCbParams = tx => {
+        const { from, value } = tx;
+        const convertETH = () => Web3.utils.fromWei(value, 'ether');
 
-    const blockCb = compose(
-      () => done(),
-      testExpect
-    );
+        expect(from.length).toBe(case1.ADR_LENGTH);
+        expect(convertETH).not.toThrowError();
+      };
 
-    const txCb = console.log;
+      const blockCb = jest.fn();
+      const txCb = jest.fn();
 
-    const runTrack = compose(
-      tracker => setState({ tracker }),
-      ETHBlock.watch
-    );
+      const expectCallTimes = () => {
+        const blockMCs = blockCb.mock.calls;
+        const txMCs = txCb.mock.calls;
 
-    runTrack({ blockCb, txCb });
-  });
+        log('[blockMCs[0][0]]', blockMCs[0][0]);
+        log('txMCs[0][0]', txMCs[0][0]);
 
-  afterAll(
-    compose(
-      ETHBlock.unWatch,
-      getKey('tracker')
-    )
+        expectBlockCbParams(blockMCs[0][0]);
+        expectTxCbParams(txMCs[0][0]);
+        expect(blockMCs.length).toBeGreaterThan(case1.blockCbCalledTimes);
+        expect(txMCs.length).toBeGreaterThan(case1.txCbCalledTimes);
+      };
+
+      const tracker = ETHBlock.watch({ blockCb, txCb });
+
+      delay(case1.WATCH_TIME).then(() => {
+        ETHBlock.unWatch(tracker);
+        expectCallTimes();
+        done();
+      });
+    },
+    case1.WATCH_MAX_TIME
   );
 });

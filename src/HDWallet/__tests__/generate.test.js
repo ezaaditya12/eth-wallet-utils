@@ -2,7 +2,7 @@ import HDWallet from 'HDWallet';
 import { generateCases as tests } from './test-cases';
 import compose from 'compose-funcs';
 
-const log = console.log;
+import { log } from 'core/helpers';
 
 describe('Generate Child Wallet From Mnemonic', () => {
   it('Should generate success', () => {

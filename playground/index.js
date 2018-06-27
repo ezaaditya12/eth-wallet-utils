@@ -1,7 +1,11 @@
 import compose from 'compose-funcs';
+import Web3 from 'web3';
 
+import { log } from 'core/helpers';
 import { composeAsync } from 'core/compose';
+import ETHBlock from 'ETHBlock';
 
+/** Try on different HDWallet */
 // const hdkey = require('ethereumjs-wallet/hdkey');
 // const bip39 = require('bip39');
 // const mnemonic = 'unknown seed kit come final jacket final protect wedding inquiry spin silver';
@@ -14,12 +18,18 @@ import { composeAsync } from 'core/compose';
 // console.log('publicKey', wallet.getPublicKeyString());
 // console.log('privateKey', wallet.getPrivateKeyString());
 // console.log('address', wallet.getAddressString());
-const lx = compose(r => console.log(r));
 
-lx('[Got it]');
+/** Try on compose */
+// const lx = compose(r => console.log(r));
+// lx('[Got it]');
 
-const getAsync = () => new Promise(r => setTimeout(() => r('Got list'), 1000));
+/** Try on composeAsync */
+// const getAsync = () => new Promise(r => setTimeout(() => r('Got list'), 1000));
+// const fAsync = composeAsync(console.log, getAsync);
+// fAsync();
 
-const fAsync = composeAsync(console.log, getAsync);
+/** Try on ETHBlock watch */
+// ETHBlock.watch({ blockCb: log, txCb: log });
 
-fAsync();
+/** Try Web3.utils instead of "web3" instance */
+log(Web3.utils.fromWei);
