@@ -1,8 +1,11 @@
 import Web3 from 'web3';
 import compose from 'compose-funcs';
+import EthereumTx from 'ethereumjs-tx';
+import { Wallet } from 'ethers';
 
 import Network from 'ETHBlock/Network';
 import Lock from 'ETHBlock/Lock';
+import HDWallet from 'HDWallet';
 
 import { log, create, silentErr } from 'core/helpers';
 
@@ -85,16 +88,94 @@ class ETHBlock {
     Lock.write(height);
   }
 
-  static getGasPrice(adr){
+  static logTransfer = ({ from, receiveAcc, amount }) => {
+    const { utils } = ETHBlock.init();
 
+    const fromAcc = `${from.substr(0, 16)}...`;
+    const toAcc = `${receiveAcc.substr(0, 16)}...`;
+    const amountEth = utils.fromWei(amount).toFixed(5);
+
+    log(`[collect] ฿ ${fromAcc} ⇨ ${toAcc} : ${amountEth} ETH`);
+  };
+
+  /**
+   * Transfer current balance of child's account
+   *
+   * @static
+   * @param {*} { childNode, receiveAcc, transferCb }
+   * @returns
+   * @memberof ETHBlock
+   */
+  static async _transferAll({ prvKey, receiveAcc, transferCb }) {
+    const { eth, utils } = ETHBlock.init();
+
+    const from = new Wallet(prvKey).address;
+    const nonce = await eth.getTransactionCount(from);
+
+    const balance = await eth.getBalance(from);
+    const gasPrice = await eth.getGasPrice();
+    const amount = balance - gasPrice;
+
+    const txInfo = {
+      nonce,
+      gasPrice,
+      to: receiveAcc,
+      value: utils.toHex(amount)
+    };
+
+    const tx = new EthereumTx(txInfo).sign(new Buffer(prvKey, 'hex'));
+    const rawTx = tx.serialize();
+    const txHash = eth.sendRawTransaction('0x' + rawTx.toString('hex'));
+
+    ETHBlock.logTransfer({ from, receiveAcc, amount });
+    transferCb({ from, receiveAcc, amount, txHash });
+
+    return txHash;
   }
 
-  static getBalance(adr){
+  static transaction() {}
 
-  }
+  /**
+   * Collect all money from children
+   * Child info should have:
+   *   + Address
+   *   + Derive path, ex: m/44'/60'/0'/0
+   *
+   * @static
+   * @param {*} {mnemonic, children, receiveAcc}
+   * @memberof ETHBlock
+   */
+  static async collect({ mnemonic, children, receiveAcc, collectCb: _cb }) {
+    log('[collect] Receive Account:', receiveAcc);
+    log('[collect] Looking children\'s account...');
+    log('[collect] This often take ~1m...');
 
-  static buildTransaction(){
-    
+    const collectCb = silentErr(_cb);
+    const masterNode = HDWallet.fromMnemonic(mnemonic);
+
+    const prvKeys = children.map(info => {
+      const { address, derivePath } = info;
+
+      const childNode = masterNode.derivePath(derivePath);
+      const prvKey = childNode.privateKey;
+      const wallet = new Wallet(prvKey);
+
+      const sameAdr = address === wallet.address;
+      if (!sameAdr) {
+        log('[collect][WARN] Find child ERR: Address & Derive Path not match');
+      }
+
+      return prvKey;
+    });
+
+    const txHashes = await Promise.all(
+      prvKeys.map(prvKey =>
+        ETHBlock._transferAll({ prvKey, receiveAcc, transferCb: collectCb })
+      )
+    );
+
+    log('[collect] txHashes:', txHashes);
+    log('[collect] Finished');
   }
 }
 
