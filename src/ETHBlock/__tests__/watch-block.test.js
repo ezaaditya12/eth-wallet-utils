@@ -17,10 +17,11 @@ describe('Watch Latest Block', () => {
       };
 
       const expectTxCbParams = tx => {
-        const { from, value } = tx;
+        const { from, to, value } = tx;
         const convertETH = () => Web3.utils.fromWei(value, 'ether');
 
         expect(from.length).toBe(case1.ADR_LENGTH);
+        expect(to.length).toBe(case1.ADR_LENGTH);
         expect(convertETH).not.toThrowError();
       };
 
@@ -31,13 +32,10 @@ describe('Watch Latest Block', () => {
         const blockMCs = blockCb.mock.calls;
         const txMCs = txCb.mock.calls;
 
-        log('[blockMCs[0][0]]', blockMCs[0][0]);
-        log('txMCs[0][0]', txMCs[0][0]);
-
         expectBlockCbParams(blockMCs[0][0]);
         expectTxCbParams(txMCs[0][0]);
-        expect(blockMCs.length).toBeGreaterThan(case1.blockCbCalledTimes);
-        expect(txMCs.length).toBeGreaterThan(case1.txCbCalledTimes);
+        expect(blockMCs.length).toBeGreaterThanOrEqual(case1.blockCbCalledTimes);
+        expect(txMCs.length).toBeGreaterThanOrEqual(case1.txCbCalledTimes);
       };
 
       const tracker = ETHBlock.watch({ blockCb, txCb });
