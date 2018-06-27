@@ -51,6 +51,36 @@ class HDWallet {
   static getAddress(hdWallet) {
     return new Wallet(hdWallet.privateKey).address;
   }
+
+  static transaction(){
+    
+  }
+
+  /**
+   * Collect all money from children
+   * Child info should have:
+   *   + Address
+   *   + Derive path, ex: m/44'/60'/0'/0
+   *
+   * @static
+   * @param {*} {mnemonic, children, receiveAcc}
+   * @memberof ETHBlock
+   */
+  static collect({mnemonic, children, receiveAcc}){
+    const masterNode = HDWallet.fromMnemonic(mnemonic);
+    const prvKeys = children.map(info => {
+      const { address, derivePath } = info;
+      const childNode = masterNode.derivePath(derivePath);
+      const wallet = new Wallet(childNode.privateKey);
+      const sameAdr = address === wallet.address;
+      if(!sameAdr) {
+        log('[collect][WARN] Find child: Address & Derive Path not match');
+      }
+      return childNode.privateKey;
+    });
+
+
+  }
 }
 
 export default HDWallet;

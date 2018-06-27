@@ -84,6 +84,18 @@ class ETHBlock {
 
     Lock.write(height);
   }
+
+  static getGasPrice(adr){
+
+  }
+
+  static getBalance(adr){
+
+  }
+
+  static buildTransaction(){
+    
+  }
 }
 
 export default ETHBlock;
