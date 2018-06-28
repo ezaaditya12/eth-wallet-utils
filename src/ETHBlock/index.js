@@ -46,11 +46,11 @@ class ETHBlock {
         synced = next === latestBlockNo;
       }
 
-      log('[ETHBlock][watch] Synced');
+      log.info('[ETHBlock][watch] Synced');
     } catch (err) {
-      log('[ETHBlock][watch]', err.message);
+      log.info('[ETHBlock][watch]', err.message);
     } finally {
-      log('[ETHBlock][watch] Kick Off Next Watch');
+      log.info('[ETHBlock][watch] Kick Off Next Watch');
       timerId = ETHBlock.kickOffNextWatch({ blockCb, txCb });
     }
 
@@ -80,8 +80,8 @@ class ETHBlock {
     const block = await eth.getBlock(blockNo, GET_TRANSACTION);
     const { number: height, hash, transactions: txs } = block;
 
-    log('[readBlock] height, hash:', height, hash);
-    log('[readBlock] txs[0]:', `${JSON.stringify(txs[0]).substr(0, 50)}...`);
+    log.info('[readBlock] height, hash:', height, hash);
+    log.info('[readBlock] txs[0]:', `${JSON.stringify(txs[0]).substr(0, 50)}...`);
 
     blockCb({ height, hash });
     txs.map(tx => txCb(tx));
@@ -126,7 +126,7 @@ class ETHBlock {
 
     if (amount < 0) {
       const balanceETH = utils.fromWei(balance);
-      log(
+      log.info(
         `[_transferAll] Child Account doesn't have enough coin to send. Balance: ${style.blue(
           balanceETH
         )} ETH`
@@ -196,7 +196,7 @@ class ETHBlock {
     // @WARN: Spend concurrently on same must transaction IN ORDER
     // txInfo.gas = '0x2710';
 
-    log('[txInfo]', txInfo);
+    log.info('[txInfo]', txInfo);
 
     const tx = new EthereumTx(txInfo);
     const prvKeyWeb3Format = prvKey.substr(2); //Remove "0x" prefix
@@ -229,9 +229,9 @@ class ETHBlock {
    * @memberof ETHBlock
    */
   static async collect({ mnemonic, children, receiveAcc, collectCb: _cb }) {
-    log('[collect] Receive Account:', receiveAcc);
+    log(`[collect] Receive Account: ${style.blue(receiveAcc)}`);
     log('[collect] Looking children\'s account...');
-    log('[collect] This often take ~1m...');
+    log('[collect] This often take ~ 1 minute...');
 
     const collectCb = silentErr(_cb);
     const masterNode = HDWallet.fromMnemonic(mnemonic);
@@ -246,7 +246,7 @@ class ETHBlock {
 
       const sameAdr = address === wallet.address;
       if (!sameAdr) {
-        log('[collect][WARN] Find child ERR: Address & Derive Path not match');
+        log.info('[collect][WARN] Find child ERR: Address & Derive Path not match');
       }
 
       return prvKey;

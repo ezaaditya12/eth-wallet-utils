@@ -35,6 +35,16 @@ class Log {
       )
     );
   };
+
+  static info = (...args) => {
+    const { NODE_ENV} = process.env;
+    if(NODE_ENV === 'production') return;
+
+    Log.log(...args);
+  }
 }
+
+// Utils
+Log.log.info = Log.info;
 
 export default Log.log;

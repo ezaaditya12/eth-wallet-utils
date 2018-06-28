@@ -9,7 +9,7 @@ const silentErr = cb => (...args) => {
   try {
     return cb && cb(...args);
   } catch (err) {
-    log('[silentErr]', err.message);
+    log.info('[silentErr]', err.message);
   }
 };
 
