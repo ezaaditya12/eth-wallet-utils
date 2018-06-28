@@ -20,8 +20,9 @@ describe('Watch Latest Block', () => {
         const { from, to, value } = tx;
         const convertETH = () => Web3.utils.fromWei(value, 'ether');
 
+        // When create "Smart Contract", tx.to is null
         expect(from.length).toBe(case1.ADR_LENGTH);
-        expect(to.length).toBe(case1.ADR_LENGTH);
+        to && expect(to.length).toBe(case1.ADR_LENGTH);
         expect(convertETH).not.toThrowError();
       };
 
@@ -34,7 +35,9 @@ describe('Watch Latest Block', () => {
 
         expectBlockCbParams(blockMCs[0][0]);
         expectTxCbParams(txMCs[0][0]);
-        expect(blockMCs.length).toBeGreaterThanOrEqual(case1.blockCbCalledTimes);
+        expect(blockMCs.length).toBeGreaterThanOrEqual(
+          case1.blockCbCalledTimes
+        );
         expect(txMCs.length).toBeGreaterThanOrEqual(case1.txCbCalledTimes);
       };
 

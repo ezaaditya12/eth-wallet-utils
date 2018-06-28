@@ -1,11 +1,11 @@
-import HDWallet from 'HDWallet';
-import { createCases as tests } from './test-cases';
 import compose from 'compose-funcs';
 
-import { log } from 'core/helpers';
+// import { log } from 'core/helpers';
+import HDWallet from 'HDWallet';
+import { createCases as test } from './test-cases';
 
 describe('Create HD Wallet', () => {
-  it('Should support create mnemonic', () => {
+  it('Should support creating mnemonic', () => {
     const mnemonic = HDWallet.newMnemonic();
     expect(typeof mnemonic).toBe('string');
 
@@ -13,10 +13,16 @@ describe('Create HD Wallet', () => {
     expect(wordArr.length).toBe(12);
   });
 
-  it('Should support creating new one', () =>
+  it('Should support creating new HD Wallet', () =>
     expect(HDWallet.newOne()).toHaveProperty('constructor.name', 'HDNode'));
 
-  it('Should support creating randomly', () => {
+  it('Should support creating from mnemonic phrase', () => {
+    const hdWallet = HDWallet.fromMnemonic(test.case1.mnemonic);
+    const address = HDWallet.getAddress(hdWallet);
+    expect(address).toBe(test.case1.hdWalletAdr);
+  });
+
+  it('Should create new HD Wallet randomly', () => {
     const getNewHDWalletAddress = compose(
       HDWallet.getAddress,
       HDWallet.newOne
@@ -24,15 +30,9 @@ describe('Create HD Wallet', () => {
     expect(getNewHDWalletAddress()).not.toEqual(getNewHDWalletAddress());
   });
 
-  it('Should success on mnemonic phrase', () => {
-    const hdWallet = HDWallet.fromMnemonic(tests.case1.mnemonic);
-    const address = HDWallet.getAddress(hdWallet);
-    expect(address).toBe(tests.case1.hdWalletAdr);
-  });
-
-  it('Should throw MnemonicError', () => {
+  it('Should throw MnemonicErr when mnemonic phrase invalid', () => {
     const failCreateHDWallet = () =>
-      HDWallet.fromMnemonic(tests.invalid.mnemonic);
-    expect(failCreateHDWallet).toThrow(tests.invalid.Error);
+      HDWallet.fromMnemonic(test.invalid.mnemonic);
+    expect(failCreateHDWallet).toThrow(test.invalid.Error);
   });
 });

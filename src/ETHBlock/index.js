@@ -20,7 +20,7 @@ class BlockErr extends Error {
 class ETHBlock {
   constructor() {}
 
-  static init() {
+  static initWeb3() {
     return compose(
       create(Web3),
       create(Web3.providers.HttpProvider),
@@ -34,7 +34,7 @@ class ETHBlock {
     let timerId = null;
 
     try {
-      const { eth } = ETHBlock.init();
+      const { eth } = ETHBlock.initWeb3();
       const latestBlockNo = await eth.getBlockNumber();
       const syncedBlockNo = +Lock.read() || latestBlockNo - 1;
       let synced = syncedBlockNo === latestBlockNo;
@@ -74,7 +74,7 @@ class ETHBlock {
 
   static async readBlock(blockNo, { blockCb, txCb }) {
     const GET_TRANSACTION = true;
-    const { eth } = ETHBlock.init();
+    const { eth } = ETHBlock.initWeb3();
 
     const block = await eth.getBlock(blockNo, GET_TRANSACTION);
     const { number: height, hash, transactions: txs } = block;
@@ -89,11 +89,12 @@ class ETHBlock {
   }
 
   static logTransfer = ({ from, receiveAcc, amount }) => {
-    const { utils } = ETHBlock.init();
+    const { utils } = ETHBlock.initWeb3();
 
     const fromAcc = `${from.substr(0, 16)}...`;
     const toAcc = `${receiveAcc.substr(0, 16)}...`;
-    const amountEth = utils.fromWei(amount).toFixed(5);
+    const _amountEth = utils.fromWei(`${amount}`, 'ether');
+    const amountEth = Number(_amountEth).toFixed(5);
 
     log(`[collect] ฿ ${fromAcc} ⇨ ${toAcc} : ${amountEth} ETH`);
   };
@@ -107,9 +108,9 @@ class ETHBlock {
    * @memberof ETHBlock
    */
   static async _transferAll({ prvKey, receiveAcc, transferCb }) {
-    const { eth, utils } = ETHBlock.init();
+    const { eth, utils } = ETHBlock.initWeb3();
 
-    const from = new Wallet(prvKey).address;
+    const from = HDWallet.newWalletFromPrv(prvKey).address;
     const nonce = await eth.getTransactionCount(from);
 
     const balance = await eth.getBalance(from);
@@ -123,17 +124,63 @@ class ETHBlock {
       value: utils.toHex(amount)
     };
 
-    const tx = new EthereumTx(txInfo).sign(new Buffer(prvKey, 'hex'));
-    const rawTx = tx.serialize();
-    const txHash = eth.sendRawTransaction('0x' + rawTx.toString('hex'));
-
+    const txHash = ETHBlock.createTransaction({ prvKey, txInfo });
     ETHBlock.logTransfer({ from, receiveAcc, amount });
     transferCb({ from, receiveAcc, amount, txHash });
-
     return txHash;
   }
 
-  static transaction() {}
+  /**
+   * Send ETH from A -> B
+   * Input shape:
+   *   + from: Private Key
+   *   + to: Receive Address
+   *   + amount: in ETHER
+   *
+   * Input ex:
+   *    {
+   *      from: '0x0000000000000000000000000000000000000000000000000000000000000000',
+   *      to: '0x3226e780E5d76034a0c93205957d5cFE9e782Eb8',
+   *      amount: 0.1 //ETH
+   *    }
+   *
+   * @param {*} param0
+   */
+  static async send({ from: prvKey, to, amount }) {
+    const { eth, utils } = ETHBlock.initWeb3();
+
+    const from = HDWallet.newWalletFromPrv(prvKey).address;
+    const nonce = await eth.getTransactionCount(from);
+    const gasPrice = await eth.getGasPrice();
+    const amountInWei = utils.toWei(`${amount}`, 'ether');
+
+    log(amountInWei);
+
+    const txInfo = {
+      nonce,
+      gasPrice,
+      to,
+      value: utils.toHex(amountInWei)
+    };
+
+    const txHash = ETHBlock.createTransaction({ prvKey, txInfo });
+    ETHBlock.logTransfer({ from, receiveAcc: to, amount: amountInWei });
+    return txHash;
+  }
+
+  static createTransaction({ prvKey, txInfo }) {
+    const { eth } = ETHBlock.initWeb3();
+    txInfo.gas = 21000;
+
+    log('[txInfo]', txInfo);
+
+    const tx = new EthereumTx(txInfo);
+    const prvKeyWeb3Format = prvKey.substr(2); //Remove "0x" prefix
+    tx.sign(new Buffer(prvKeyWeb3Format, 'hex'));
+
+    const rawTx = tx.serialize();
+    return eth.sendSignedTransaction('0x' + rawTx.toString('hex'));
+  }
 
   /**
    * Collect all money from children

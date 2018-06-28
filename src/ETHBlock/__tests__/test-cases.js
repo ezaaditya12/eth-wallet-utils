@@ -1,3 +1,7 @@
+import HDWallet from 'HDWallet';
+
+const { END_USER_PRV } = process.env;
+
 const createWeb3 = {
   case1: {
     apiKey: 'version',
@@ -17,4 +21,13 @@ const watchBlock = {
   }
 };
 
-export { createWeb3, watchBlock };
+const collectCases = {
+  case1: {
+    endUserPrv: END_USER_PRV,
+    hdWalletMnemonic: HDWallet.newMnemonic(),
+    endUserSpends: [0.005, 0.008],
+    collectTotal: 0.012
+  }
+};
+
+export { createWeb3, watchBlock, collectCases };

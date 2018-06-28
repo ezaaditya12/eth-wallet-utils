@@ -23,7 +23,10 @@ class HDWallet {
           const childPath = `${HDWallet.BIP44}/${offset + index}`;
           const childNode = masterNode.derivePath(childPath);
           const wallet = new Wallet(childNode.privateKey);
-          return wallet.address;
+          return {
+            address: wallet.address,
+            derivePath: childPath
+          };
         });
   }
 
@@ -48,8 +51,16 @@ class HDWallet {
     )();
   }
 
-  static getAddress(hdWallet) {
+  static getHDWalletAddress(hdWallet) {
     return new Wallet(hdWallet.privateKey).address;
+  }
+
+  static newWalletFromPrv(prvKey) {
+    return new Wallet(prvKey);
+  }
+
+  static newWallet() {
+    return Wallet.createRandom();
   }
 }
 
