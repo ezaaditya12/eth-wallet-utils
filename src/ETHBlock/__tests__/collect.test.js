@@ -9,9 +9,9 @@ const randomChild = arr => arr[Math.floor(Math.random() * arr.length)];
 
 describe('Create HD Wallet', () => {
   const case1 = test.case1;
-  const { endUserPrv, hdWalletMnemonic, endUserSpends } = case1;
-  const shouldHasVal = endUserPrv && hdWalletMnemonic && endUserSpends;
-
+  const { endUserPrv, mnemonic, endUserSpends, receiveAcc, collectBase } = case1;
+  const shouldHasVal = endUserPrv && mnemonic && endUserSpends;
+  
   if (!shouldHasVal) {
     log(
       [
@@ -24,6 +24,9 @@ describe('Create HD Wallet', () => {
 
     return;
   }
+
+  const collectCb = jest.fn();
+  const collectMCs = collectCb.mock.calls;
 
   /**
    * Scenario: End user sends coin to child address of HD Wallet
@@ -40,7 +43,7 @@ describe('Create HD Wallet', () => {
       ].join(os.EOL)
     );
 
-    const hdWallet = HDWallet.fromMnemonic(hdWalletMnemonic);
+    const hdWallet = HDWallet.fromMnemonic(mnemonic);
     const childAccArr = HDWallet.generate({ offset: 0, limit: 10 })(hdWallet);
 
     // End user send to random child's account
@@ -55,9 +58,15 @@ describe('Create HD Wallet', () => {
     }, Promise.resolve());
 
     log('[collect.test] User sends coin completely');
+
+    await ETHBlock.collect({ mnemonic, children: childAccArr, receiveAcc, collectCb});
   }, case1.WAIT_COLLECT_TIMEOUT);
 
-  it( 'Should collect money from children\'s account', () => {
+  it( 'Should collect money from children\'s account', async () => {
+    // Store current balance: "End User", "Receive Account"
+    const { eth } = ETHBlock.initWeb3();
+    const receiveAccBalance = await eth.getBalance(receiveAcc);
+    log('[receiveAccBalance]', receiveAccBalance);
     expect(true).toBe(true);
   });
 });

@@ -96,11 +96,11 @@ class ETHBlock {
     const fromAcc = `${shorten(from)}...`;
     const toAcc = `${shorten(receiveAcc)}...`;
     const _amountEth = utils.fromWei(`${amount}`, 'ether');
-    const amountEth = Number(_amountEth).toFixed(5);
+    const amountETH = Number(_amountEth).toFixed(5);
 
     tag = tag || 'collect';
-    log(`[${tag}] 📜  Transaction Hash: ${txHash}`);
-    log(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountEth)} ETH`);
+    log(`[${tag}] 📜  Transaction Hash: ${style.white(txHash)}`);
+    log(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
   };
 
   /**
@@ -119,14 +119,21 @@ class ETHBlock {
 
     const balance = await eth.getBalance(from);
     const gasPrice = await eth.getGasPrice();
-    const amount = balance - gasPrice;
+    const gas = 21000;
+    const amount = balance - gasPrice * gas;
+
+    if(amount < 0){
+      const balanceETH = utils.fromWei(balance);
+      log(`[_transferAll] Child Account doesn't have enough coin to send. Balance: ${style.blue(balanceETH)} ETH`);
+      return;
+    }
 
     const txInfo = {
       nonce,
-      gasPrice,
-      gas: '0x2710',
       to: receiveAcc,
-      value: utils.toHex(amount)
+      gas: utils.toHex(gas),
+      value: utils.toHex(amount),
+      gasPrice: utils.toHex(gasPrice),
     };
 
     const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
@@ -200,6 +207,12 @@ class ETHBlock {
     return await promiEvent.then(receipt => receipt.transactionHash);
   }
 
+  static async getBalanceInETH(address){
+    const { eth, utils } = ETHBlock.initWeb3();
+    const balance = await eth.getBalance(address);
+    return utils.fromWei(balance);
+  }
+
   /**
    * Collect all money from children
    * Child info should have:
@@ -218,6 +231,7 @@ class ETHBlock {
     const collectCb = silentErr(_cb);
     const masterNode = HDWallet.fromMnemonic(mnemonic);
 
+    // Get child's private key
     const prvKeys = children.map(info => {
       const { address, derivePath } = info;
 
@@ -233,14 +247,19 @@ class ETHBlock {
       return prvKey;
     });
 
+    // Use private key to send coin
     const txHashes = await Promise.all(
       prvKeys.map(prvKey =>
         ETHBlock._transferAll({ prvKey, receiveAcc, transferCb: collectCb })
       )
     );
 
-    log('[collect] txHashes:', txHashes);
-    log('[collect] Finished');
+    const validTxHashed = txHashes.filter(Boolean);
+    const receiveAccBalance = await ETHBlock.getBalanceInETH(receiveAcc);
+    log('[collect] txHashes:', validTxHashed);
+    log(`[collect] 💼  Receive Account Address: ${style.white(receiveAcc)}`);
+    log(`[collect] 💰  Receive Account Balance: ${style.blue(receiveAccBalance)} ETH`);
+    log('[collect] Finished.');
   }
 }
 
