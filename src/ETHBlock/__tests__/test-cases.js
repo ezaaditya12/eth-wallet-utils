@@ -24,7 +24,7 @@ const collectCases = {
       '0xa61c5626b69112a408e807ab75a6afea4713eba954ce4a5b38d08700f4888a7d',
     hdWalletMnemonic: HDWallet.newMnemonic(),
     endUserSpends: [0.005, 0.008],
-    WAIT_COLLECT_TIMEOUT: 40 * 1000, //Wait for 2 spends
+    WAIT_COLLECT_TIMEOUT: 120 * 1000, //Wait for 2 spends
     collectTotal: 0.012
   }
 };

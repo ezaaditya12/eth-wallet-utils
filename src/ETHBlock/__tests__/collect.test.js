@@ -45,7 +45,7 @@ describe('Create HD Wallet', () => {
 
     // End user send to random child's account
     // @WARN: Send transaction MUST IN ORDER
-    const txHashes = endUserSpends.reduce(async (prevSend, amount) => {
+    await endUserSpends.reduce(async (prevSend, amount) => {
       await prevSend;
       return ETHBlock.send({
         amount,
@@ -54,16 +54,10 @@ describe('Create HD Wallet', () => {
       });
     }, Promise.resolve());
 
-    log('[collect.test] txHashes', txHashes);
-  });
+    log('[collect.test] User sends coin completely');
+  }, case1.WAIT_COLLECT_TIMEOUT);
 
-  it(
-    'Should collect money from children\'s account',
-    () => {
-      delay(case1.WAIT_COLLECT_TIMEOUT).then(() => {
-        expect(true).toBe(true);
-      });
-    },
-    case1.WAIT_COLLECT_TIMEOUT
-  );
+  it( 'Should collect money from children\'s account', () => {
+    expect(true).toBe(true);
+  });
 });

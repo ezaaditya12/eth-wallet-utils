@@ -2,6 +2,7 @@ import Web3 from 'web3';
 import compose from 'compose-funcs';
 import EthereumTx from 'ethereumjs-tx';
 import { Wallet } from 'ethers';
+import style from 'chalk';
 
 import Network from 'ETHBlock/Network';
 import Lock from 'ETHBlock/Lock';
@@ -80,7 +81,7 @@ class ETHBlock {
     const { number: height, hash, transactions: txs } = block;
 
     log('[readBlock] height, hash:', height, hash);
-    log('[readBlock] txs[0]:', JSON.stringify(txs[0]).substr(0, 50));
+    log('[readBlock] txs[0]:', `${JSON.stringify(txs[0]).substr(0, 50)}...`);
 
     blockCb({ height, hash });
     txs.map(tx => txCb(tx));
@@ -88,16 +89,18 @@ class ETHBlock {
     Lock.write(height);
   }
 
-  static _logTransfer = ({ from, receiveAcc, amount, tag }) => {
+  static _logTransfer = ({ from, receiveAcc, amount, txHash, tag }) => {
     const { utils } = ETHBlock.initWeb3();
+    const shorten = str => str.substr(0, 16);
 
-    const fromAcc = `${from.substr(0, 16)}...`;
-    const toAcc = `${receiveAcc.substr(0, 16)}...`;
+    const fromAcc = `${shorten(from)}...`;
+    const toAcc = `${shorten(receiveAcc)}...`;
     const _amountEth = utils.fromWei(`${amount}`, 'ether');
     const amountEth = Number(_amountEth).toFixed(5);
 
     tag = tag || 'collect';
-    log(`[${tag}] 💰 ${fromAcc} ⇨ ${toAcc} : ${amountEth} ETH`);
+    log(`[${tag}] 📜  Transaction Hash: ${txHash}`);
+    log(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountEth)} ETH`);
   };
 
   /**
@@ -127,7 +130,7 @@ class ETHBlock {
     };
 
     const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
-    ETHBlock._logTransfer({ from, receiveAcc, amount });
+    ETHBlock._logTransfer({ from, receiveAcc, amount, txHash });
     transferCb({ from, receiveAcc, amount, txHash });
     return txHash;
   }
@@ -167,6 +170,7 @@ class ETHBlock {
     const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
     ETHBlock._logTransfer({
       from,
+      txHash,
       receiveAcc: to,
       amount: amountInWei,
       tag: 'send'
@@ -193,12 +197,7 @@ class ETHBlock {
       `0x${serializedTx.toString('hex')}`
     );
 
-    return await promiEvent
-      .once('transactionHash', txHash => log('[txHash]', txHash))
-      .then(receipt => {
-        log('[receipt]', receipt);
-        return receipt;
-      });
+    return await promiEvent.then(receipt => receipt.transactionHash);
   }
 
   /**
