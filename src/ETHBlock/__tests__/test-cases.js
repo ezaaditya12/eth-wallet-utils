@@ -23,7 +23,8 @@ const watchBlock = {
 
 const collectCases = {
   case1: {
-    endUserPrv: END_USER_PRV,
+    endUserPrv:
+      '0xa61c5626b69112a408e807ab75a6afea4713eba954ce4a5b38d08700f4888a7d',
     hdWalletMnemonic: HDWallet.newMnemonic(),
     endUserSpends: [0.005, 0.008],
     collectTotal: 0.012

@@ -18,13 +18,13 @@ describe('Create HD Wallet', () => {
 
   it('Should support creating from mnemonic phrase', () => {
     const hdWallet = HDWallet.fromMnemonic(test.case1.mnemonic);
-    const address = HDWallet.getAddress(hdWallet);
+    const address = HDWallet.getHDWalletAddress(hdWallet);
     expect(address).toBe(test.case1.hdWalletAdr);
   });
 
   it('Should create new HD Wallet randomly', () => {
     const getNewHDWalletAddress = compose(
-      HDWallet.getAddress,
+      HDWallet.getHDWalletAddress,
       HDWallet.newOne
     );
     expect(getNewHDWalletAddress()).not.toEqual(getNewHDWalletAddress());

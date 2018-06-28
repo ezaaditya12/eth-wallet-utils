@@ -96,7 +96,7 @@ class ETHBlock {
     const _amountEth = utils.fromWei(`${amount}`, 'ether');
     const amountEth = Number(_amountEth).toFixed(5);
 
-    log(`[collect] ฿ ${fromAcc} ⇨ ${toAcc} : ${amountEth} ETH`);
+    log(`[collect] 💰฿ ${fromAcc} ⇨ ${toAcc} : ${amountEth} ETH`);
   };
 
   /**

@@ -49,5 +49,5 @@ describe('Create HD Wallet', () => {
     log('[collect.test] txHashes', txHashes);
   });
 
-  it('Should collect money from children\'s account', () => {});
+  it.skip('Should collect money from children\'s account', () => {});
 });
