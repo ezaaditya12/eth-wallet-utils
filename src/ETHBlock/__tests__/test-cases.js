@@ -1,7 +1,5 @@
 import HDWallet from 'HDWallet';
 
-const { END_USER_PRV } = process.env;
-
 const createWeb3 = {
   case1: {
     apiKey: 'version',
@@ -12,8 +10,7 @@ const createWeb3 = {
 const watchBlock = {
   case1: {
     oldBlock: 3510386,
-    WATCH_TIME: 8 * 1000,
-    WATCH_MAX_TIME: 10 * 1000,
+    WATCH_TIMEOUT: 5 * 1000,
     HASH_LENGTH: 66,
     ADR_LENGTH: 42,
     blockCbCalledTimes: 1,
@@ -27,6 +24,7 @@ const collectCases = {
       '0xa61c5626b69112a408e807ab75a6afea4713eba954ce4a5b38d08700f4888a7d',
     hdWalletMnemonic: HDWallet.newMnemonic(),
     endUserSpends: [0.005, 0.008],
+    WAIT_COLLECT_TIMEOUT: 40 * 1000, //Wait for 2 spends
     collectTotal: 0.012
   }
 };

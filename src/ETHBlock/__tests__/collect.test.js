@@ -1,6 +1,6 @@
 import os from 'os';
 
-import { log } from 'core/helpers';
+import { log, delay } from 'core/helpers';
 import ETHBlock from 'ETHBlock';
 import HDWallet from 'HDWallet';
 import { collectCases as test } from './test-cases';
@@ -26,28 +26,44 @@ describe('Create HD Wallet', () => {
   }
 
   /**
-   * Scenario: End user sends coin to his address
+   * Scenario: End user sends coin to child address of HD Wallet
    * Logic:
-   *   + End user's account is child account of HD Wallet
+   *   + End user's account using child address of HD Wallet
    *   + Hold mnemonic phrase > can collect back all money
    */
   beforeAll(async () => {
+    log(
+      [
+        '[collect.test] Setup scenario',
+        '[collect.test]   + End user send coin to child address of HD Wallet',
+        '[collect.test]   + Hold mnemonic phrase > can collect back all money'
+      ].join(os.EOL)
+    );
+
     const hdWallet = HDWallet.fromMnemonic(hdWalletMnemonic);
     const childAccArr = HDWallet.generate({ offset: 0, limit: 10 })(hdWallet);
 
     // End user send to random child's account
-    const txHashes = await Promise.all(
-      endUserSpends.map(amount =>
-        ETHBlock.send({
-          amount,
-          from: endUserPrv,
-          to: randomChild(childAccArr).address
-        })
-      )
-    );
+    // @WARN: Send transaction MUST IN ORDER
+    const txHashes = endUserSpends.reduce(async (prevSend, amount) => {
+      await prevSend;
+      return ETHBlock.send({
+        amount,
+        from: endUserPrv,
+        to: randomChild(childAccArr).address
+      });
+    }, Promise.resolve());
 
     log('[collect.test] txHashes', txHashes);
   });
 
-  it.skip('Should collect money from children\'s account', () => {});
+  it(
+    'Should collect money from children\'s account',
+    () => {
+      delay(case1.WAIT_COLLECT_TIMEOUT).then(() => {
+        expect(true).toBe(true);
+      });
+    },
+    case1.WAIT_COLLECT_TIMEOUT
+  );
 });

@@ -41,7 +41,7 @@ class ETHBlock {
 
       while (!synced) {
         const next = syncedBlockNo + 1;
-        await ETHBlock.readBlock(next, { blockCb, txCb });
+        await ETHBlock._readBlock(next, { blockCb, txCb });
         synced = next === latestBlockNo;
       }
 
@@ -72,7 +72,7 @@ class ETHBlock {
     clearTimeout(timerId);
   }
 
-  static async readBlock(blockNo, { blockCb, txCb }) {
+  static async _readBlock(blockNo, { blockCb, txCb }) {
     const GET_TRANSACTION = true;
     const { eth } = ETHBlock.initWeb3();
 
@@ -80,7 +80,7 @@ class ETHBlock {
     const { number: height, hash, transactions: txs } = block;
 
     log('[readBlock] height, hash:', height, hash);
-    log('[readBlock] txs[0]:', txs[0]);
+    log('[readBlock] txs[0]:', JSON.stringify(txs[0]).substr(0, 50));
 
     blockCb({ height, hash });
     txs.map(tx => txCb(tx));
@@ -88,7 +88,7 @@ class ETHBlock {
     Lock.write(height);
   }
 
-  static logTransfer = ({ from, receiveAcc, amount }) => {
+  static _logTransfer = ({ from, receiveAcc, amount, tag }) => {
     const { utils } = ETHBlock.initWeb3();
 
     const fromAcc = `${from.substr(0, 16)}...`;
@@ -96,7 +96,8 @@ class ETHBlock {
     const _amountEth = utils.fromWei(`${amount}`, 'ether');
     const amountEth = Number(_amountEth).toFixed(5);
 
-    log(`[collect] 💰฿ ${fromAcc} ⇨ ${toAcc} : ${amountEth} ETH`);
+    tag = tag || 'collect';
+    log(`[${tag}] 💰 ${fromAcc} ⇨ ${toAcc} : ${amountEth} ETH`);
   };
 
   /**
@@ -120,12 +121,13 @@ class ETHBlock {
     const txInfo = {
       nonce,
       gasPrice,
+      gas: '0x2710',
       to: receiveAcc,
       value: utils.toHex(amount)
     };
 
-    const txHash = ETHBlock.createTransaction({ prvKey, txInfo });
-    ETHBlock.logTransfer({ from, receiveAcc, amount });
+    const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
+    ETHBlock._logTransfer({ from, receiveAcc, amount });
     transferCb({ from, receiveAcc, amount, txHash });
     return txHash;
   }
@@ -154,32 +156,49 @@ class ETHBlock {
     const gasPrice = await eth.getGasPrice();
     const amountInWei = utils.toWei(`${amount}`, 'ether');
 
-    log(amountInWei);
-
     const txInfo = {
-      nonce,
-      gasPrice,
       to,
+      nonce: utils.toHex(nonce),
+      gasPrice: utils.toHex(gasPrice),
+      gas: utils.toHex(21000),
       value: utils.toHex(amountInWei)
     };
 
-    const txHash = ETHBlock.createTransaction({ prvKey, txInfo });
-    ETHBlock.logTransfer({ from, receiveAcc: to, amount: amountInWei });
+    const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
+    ETHBlock._logTransfer({
+      from,
+      receiveAcc: to,
+      amount: amountInWei,
+      tag: 'send'
+    });
     return txHash;
   }
 
-  static createTransaction({ prvKey, txInfo }) {
-    const { eth } = ETHBlock.initWeb3();
-    txInfo.gas = 21000;
-
+  static async _createTransaction({ prvKey, txInfo }) {
     log('[txInfo]', txInfo);
+    log(
+      '[_createTransaction] When create multiple transactions should push in queue'
+    );
+
+    const { eth } = ETHBlock.initWeb3();
+    // @TODO: Check required key of txInfo
+    // txInfo.gas = '0x2710';
 
     const tx = new EthereumTx(txInfo);
     const prvKeyWeb3Format = prvKey.substr(2); //Remove "0x" prefix
     tx.sign(new Buffer(prvKeyWeb3Format, 'hex'));
 
-    const rawTx = tx.serialize();
-    return eth.sendSignedTransaction('0x' + rawTx.toString('hex'));
+    const serializedTx = tx.serialize();
+    const promiEvent = eth.sendSignedTransaction(
+      `0x${serializedTx.toString('hex')}`
+    );
+
+    return await promiEvent
+      .once('transactionHash', txHash => log('[txHash]', txHash))
+      .then(receipt => {
+        log('[receipt]', receipt);
+        return receipt;
+      });
   }
 
   /**
