@@ -12,7 +12,7 @@ const createTinyStore = initState => {
     payload => ({ type: 'UPDATE_STATE', payload })
   );
 
-  const getKey = key => () => {
+  const getKey = key => {
     const curr = store.getState();
     return curr[key];
   };

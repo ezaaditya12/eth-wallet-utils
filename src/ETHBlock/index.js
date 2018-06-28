@@ -99,8 +99,10 @@ class ETHBlock {
     const amountETH = Number(_amountEth).toFixed(5);
 
     tag = tag || 'collect';
-    log(`[${tag}] 📜  Transaction Hash: ${style.white(txHash)}`);
-    log(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
+    log(`[${tag}] 📜  Transaction Hash: ${style.blue(txHash)}`);
+    log(
+      `[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`
+    );
   };
 
   /**
@@ -114,7 +116,7 @@ class ETHBlock {
   static async _transferAll({ prvKey, receiveAcc, transferCb }) {
     const { eth, utils } = ETHBlock.initWeb3();
 
-    const from = HDWallet.newWalletFromPrv(prvKey).address;
+    const from = HDWallet.walletFromPrv(prvKey).address;
     const nonce = await eth.getTransactionCount(from);
 
     const balance = await eth.getBalance(from);
@@ -122,9 +124,13 @@ class ETHBlock {
     const gas = 21000;
     const amount = balance - gasPrice * gas;
 
-    if(amount < 0){
+    if (amount < 0) {
       const balanceETH = utils.fromWei(balance);
-      log(`[_transferAll] Child Account doesn't have enough coin to send. Balance: ${style.blue(balanceETH)} ETH`);
+      log(
+        `[_transferAll] Child Account doesn't have enough coin to send. Balance: ${style.blue(
+          balanceETH
+        )} ETH`
+      );
       return;
     }
 
@@ -133,7 +139,7 @@ class ETHBlock {
       to: receiveAcc,
       gas: utils.toHex(gas),
       value: utils.toHex(amount),
-      gasPrice: utils.toHex(gasPrice),
+      gasPrice: utils.toHex(gasPrice)
     };
 
     const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
@@ -161,7 +167,7 @@ class ETHBlock {
   static async send({ from: prvKey, to, amount }) {
     const { eth, utils } = ETHBlock.initWeb3();
 
-    const from = HDWallet.newWalletFromPrv(prvKey).address;
+    const from = HDWallet.walletFromPrv(prvKey).address;
     const nonce = await eth.getTransactionCount(from);
     const gasPrice = await eth.getGasPrice();
     const amountInWei = utils.toWei(`${amount}`, 'ether');
@@ -186,20 +192,19 @@ class ETHBlock {
   }
 
   static async _createTransaction({ prvKey, txInfo }) {
-    log('[txInfo]', txInfo);
-    log(
-      '[_createTransaction] When create multiple transactions should push in queue'
-    );
-
-    const { eth } = ETHBlock.initWeb3();
     // @TODO: Check required key of txInfo
+    // @WARN: Spend concurrently on same must transaction IN ORDER
     // txInfo.gas = '0x2710';
+
+    log('[txInfo]', txInfo);
 
     const tx = new EthereumTx(txInfo);
     const prvKeyWeb3Format = prvKey.substr(2); //Remove "0x" prefix
-    tx.sign(new Buffer(prvKeyWeb3Format, 'hex'));
 
+    tx.sign(new Buffer(prvKeyWeb3Format, 'hex'));
     const serializedTx = tx.serialize();
+
+    const { eth } = ETHBlock.initWeb3();
     const promiEvent = eth.sendSignedTransaction(
       `0x${serializedTx.toString('hex')}`
     );
@@ -207,7 +212,7 @@ class ETHBlock {
     return await promiEvent.then(receipt => receipt.transactionHash);
   }
 
-  static async getBalanceInETH(address){
+  static async getBalanceInETH(address) {
     const { eth, utils } = ETHBlock.initWeb3();
     const balance = await eth.getBalance(address);
     return utils.fromWei(balance);
@@ -257,8 +262,12 @@ class ETHBlock {
     const validTxHashed = txHashes.filter(Boolean);
     const receiveAccBalance = await ETHBlock.getBalanceInETH(receiveAcc);
     log('[collect] txHashes:', validTxHashed);
-    log(`[collect] 💼  Receive Account Address: ${style.white(receiveAcc)}`);
-    log(`[collect] 💰  Receive Account Balance: ${style.blue(receiveAccBalance)} ETH`);
+    log(`[collect] 💼  Receive Account Address: ${style.blue(receiveAcc)}`);
+    log(
+      `[collect] 💰  Receive Account Balance: ${style.blue(
+        receiveAccBalance
+      )} ETH`
+    );
     log('[collect] Finished.');
   }
 }

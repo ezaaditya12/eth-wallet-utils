@@ -55,7 +55,7 @@ class HDWallet {
     return new Wallet(hdWallet.privateKey).address;
   }
 
-  static newWalletFromPrv(prvKey) {
+  static walletFromPrv(prvKey) {
     return new Wallet(prvKey);
   }
 
