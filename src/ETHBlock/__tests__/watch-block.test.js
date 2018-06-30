@@ -1,4 +1,5 @@
 import Web3 from 'web3';
+import moment from 'moment';
 
 import ETHBlock from 'ETHBlock';
 import { watchBlock as test } from 'ETHBlock/__tests__/test-cases';
@@ -18,7 +19,7 @@ describe('Watch Latest Block', () => {
     const tracker = ETHBlock.watch({ blockCb, txCb });
     await delay(case1.WATCH_TIMEOUT);
     ETHBlock.unWatch(tracker);
-  }, case1.WATCH_TIMEOUT + 2*1000);
+  }, case1.WATCH_TIMEOUT + 2 * 1000);
 
   it('Should watch block successfully', () => {
     expect(blockMCs.length).toBeGreaterThanOrEqual(case1.blockCbCalledTimes);
@@ -47,5 +48,31 @@ describe('Watch Latest Block', () => {
     };
 
     expectTxCbParams(txMCs[0][0]);
+  });
+});
+
+describe('Watch Keep Looping', () => {
+  const case2 = test.case2;
+  
+  const blockCb = jest.fn();
+  const txCb = jest.fn();
+
+  const blockMCs = blockCb.mock.calls;
+  const txMCs = txCb.mock.calls;
+
+  const watchTime = moment.duration(case2.WATCH_TIMEOUT);
+
+  describe(`Test Watch Block in ${watchTime.humanize()}`, () => {
+    beforeAll(async () => {
+      // Run ETHBlock.watch in specified time
+      const tracker = ETHBlock.watch({ blockCb, txCb });
+      await delay(case2.WATCH_TIMEOUT);
+      ETHBlock.unWatch(tracker);
+    }, case2.WATCH_TIMEOUT + 2 * 1000);
+  
+    it('Should call blockCb & txCb a lot', () => {
+      expect(blockMCs.length).toBeGreaterThan(case2.blockCbCalledTimes);
+      expect(txMCs.length).toBeGreaterThan(case2.txCbCalledTimes);
+    });
   });
 });

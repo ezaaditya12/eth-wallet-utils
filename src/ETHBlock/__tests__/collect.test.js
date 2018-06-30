@@ -18,7 +18,7 @@ describe('Collect money from all children account', () => {
    * Validate Test Environment Condition
    */
   beforeAll(async () => {
-    log.info('[collect.test] Validate...');
+    log.info('[collect.test] Validating "Test Setup"...');
 
     const shouldHasVal = endUserPrv && mnemonic && endUserSpends;
     if (!shouldHasVal) {
@@ -103,26 +103,32 @@ describe('Collect money from all children account', () => {
       log.info('[collect.test] Collect money from children account completely');
     }, case1.WAIT_COLLECT_TIMEOUT);
 
-    it('End User should send coin to child account', async () => {
-      const currBalanceETH = await ETHBlock.getBalanceInETH(endUserAcc);
-      const prvBalanceETH = getKey('endUserAccBalance');
-      const diff = currBalanceETH - prvBalanceETH;
+    it(
+      'End User should send coin to child account',
+      async () => {
+        const currBalanceETH = await ETHBlock.getBalanceInETH(endUserAcc);
+        const prvBalanceETH = getKey('endUserAccBalance');
+        const diffABS = Math.abs(currBalanceETH - prvBalanceETH);
 
-      expect(diff).toBeLessThan(0);
-      expect(Math.abs(diff)).toBeCloseTo(totalSpends);
-    }, case1.WAIT_INFO_TIMEOUT);
+        expect(diffABS).toBeCloseTo(totalSpends);
+      },
+      case1.WAIT_INFO_TIMEOUT
+    );
 
-    it('Should collect money from children\'s account', async () => {
-      const currBalanceETH = await ETHBlock.getBalanceInETH(receiveAcc);
-      const prvBalanceETH = getKey('receiveAccBalance');
-      const diff = currBalanceETH - prvBalanceETH;
+    it(
+      'Should collect ALL money from children\'s account',
+      async () => {
+        const currBalanceETH = await ETHBlock.getBalanceInETH(receiveAcc);
+        const prvBalanceETH = getKey('receiveAccBalance');
+        const diffABS = Math.abs(currBalanceETH - prvBalanceETH);
 
-      expect(diff).toBeGreaterThan(0);
-      expect(Math.abs(diff)).toBeCloseTo(totalSpends);
-    }, case1.WAIT_INFO_TIMEOUT);
+        expect(diffABS).toBeCloseTo(totalSpends);
+      },
+      case1.WAIT_INFO_TIMEOUT
+    );
 
-    it('Should execute collectCb', () => {
-      expect(collectMCs.length).toBeGreaterThan(1);
+    it('Should call collectCb', () => {
+      expect(collectMCs.length).toBe(endUserSpends.length);
     });
 
     it('Should call collectCb with right params\'s shape', () => {

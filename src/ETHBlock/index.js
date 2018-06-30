@@ -18,6 +18,36 @@ class BlockErr extends Error {
   }
 }
 
+class Tracker {
+  static RUNNING = 'RUNNING';
+  static STOP = 'STOP';
+
+  constructor() {
+    this.status = Tracker.RUNNING;
+    this.timerId = null;
+  }
+
+  shouldRun() {
+    return this.status === Tracker.RUNNING;
+  }
+
+  set(newState) {
+    Object.assign(this, newState);
+  }
+
+  _reset() {
+    this.set({
+      status: Tracker.STOP,
+      timerId: null
+    });
+  }
+
+  stop() {
+    this.timerId && clearTimeout(this.timerId);
+    this._reset();
+  }
+}
+
 class ETHBlock {
   constructor() {}
 
@@ -29,48 +59,60 @@ class ETHBlock {
     )();
   }
 
-  static async watch({ blockCb: _cb1, txCb: cb2 } = {}) {
+  static newTracker() {
+    return new Tracker();
+  }
+
+  static watch({ blockCb: _cb1, txCb: cb2 } = {}) {
+    const tracker = ETHBlock.newTracker();
+
     const blockCb = silentErr(_cb1);
     const txCb = silentErr(cb2);
-    let timerId = null;
+    const watchPromise = ETHBlock._watch(tracker)({ blockCb, txCb });
+    tracker.set({ watchPromise });
 
-    try {
-      const { eth } = ETHBlock.initWeb3();
-      const latestBlockNo = await eth.getBlockNumber();
-      const syncedBlockNo = +Lock.read() || latestBlockNo - 1;
-      let synced = syncedBlockNo === latestBlockNo;
-
-      while (!synced) {
-        const next = syncedBlockNo + 1;
-        await ETHBlock._readBlock(next, { blockCb, txCb });
-        synced = next === latestBlockNo;
-      }
-
-      log.info('[ETHBlock][watch] Synced');
-    } catch (err) {
-      log.info('[ETHBlock][watch]', err.message);
-    } finally {
-      log.info('[ETHBlock][watch] Kick Off Next Watch');
-      timerId = ETHBlock.kickOffNextWatch({ blockCb, txCb });
-    }
-
-    return timerId;
+    return tracker;
   }
 
-  static kickOffNextWatch({ blockCb, txCb }) {
+  static _watch(tracker) {
+    return async ({ blockCb, txCb }) => {
+      try {
+        const { eth } = ETHBlock.initWeb3();
+        const latestBlockNo = await eth.getBlockNumber();
+        const syncedBlockNo = +Lock.read() || latestBlockNo - 1;
+        let synced = syncedBlockNo === latestBlockNo;
+
+        while (!synced && tracker.shouldRun()) {
+          const next = syncedBlockNo + 1;
+          await ETHBlock._readBlock(next, { blockCb, txCb });
+          synced = next === latestBlockNo;
+        }
+
+        log.info('[ETHBlock][watch] Synced');
+      } catch (err) {
+        log.info('[ETHBlock][watch]', err.message);
+      } finally {
+        if (tracker.shouldRun()) {
+          log.info('[ETHBlock][watch] Kick Off Next Watch');
+          ETHBlock.kickOffNextWatch(tracker, { blockCb, txCb });
+        }
+      }
+    };
+  }
+
+  static kickOffNextWatch(tracker, { blockCb, txCb }) {
     const { WATCH_INTERVAL } = process.env;
 
-    const timerId = setTimeout(
-      () => ETHBlock.watch({ blockCb, txCb }),
-      WATCH_INTERVAL
-    );
+    const timerId = setTimeout(() => {
+      const watchPromise = ETHBlock._watch(tracker)({ blockCb, txCb });
+      tracker.set({ watchPromise });
+    }, WATCH_INTERVAL);
 
-    return timerId;
+    tracker.set({ timerId });
   }
 
-  static unWatch(timerId) {
-    if (!timerId) return;
-    clearTimeout(timerId);
+  static unWatch(tracker) {
+    tracker.stop();
   }
 
   static async _readBlock(blockNo, { blockCb, txCb }) {
@@ -81,7 +123,10 @@ class ETHBlock {
     const { number: height, hash, transactions: txs } = block;
 
     log.info('[readBlock] height, hash:', height, hash);
-    log.info('[readBlock] txs[0]:', `${JSON.stringify(txs[0]).substr(0, 50)}...`);
+    log.info(
+      '[readBlock] txs[0]:',
+      `${JSON.stringify(txs[0]).substr(0, 50)}...`
+    );
 
     blockCb({ height, hash });
     txs.map(tx => txCb(tx));
@@ -246,7 +291,9 @@ class ETHBlock {
 
       const sameAdr = address === wallet.address;
       if (!sameAdr) {
-        log.info('[collect][WARN] Find child ERR: Address & Derive Path not match');
+        log.info(
+          '[collect][WARN] Find child ERR: Address & Derive Path not match'
+        );
       }
 
       return prvKey;
