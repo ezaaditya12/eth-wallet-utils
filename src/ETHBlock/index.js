@@ -274,7 +274,8 @@ class ETHBlock {
    * @memberof ETHBlock
    */
   static async collect({ mnemonic, children, receiveAcc, collectCb: _cb }) {
-    log(`[collect] Receive Account: ${style.blue(receiveAcc)}`);
+    log('[collect] mnemonic:', style.blue(receiveAcc));
+    log('[collect] Receive Account:', style.blue(receiveAcc));
     log('[collect] Looking children\'s account...');
     log('[collect] This often take ~ 1 minute...');
 

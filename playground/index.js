@@ -4,6 +4,7 @@ import Web3 from 'web3';
 import { log } from 'core/helpers';
 import { composeAsync } from 'core/compose';
 import ETHBlock from 'ETHBlock';
+import HDWallet from 'HDWallet';
 
 /** Try on different HDWallet */
 // const hdkey = require('ethereumjs-wallet/hdkey');
@@ -32,4 +33,11 @@ import ETHBlock from 'ETHBlock';
 // ETHBlock.watch({ blockCb: log, txCb: log });
 
 /** Try Web3.utils instead of "web3" instance */
-log(Web3.utils.fromWei);
+// log.info(Web3.utils.fromWei);
+
+/** New mnemonic */
+log.info(HDWallet.newMnemonic());
+
+/** Validate address */
+log.info(HDWallet.isValidAddress('xxx'));
+log.info(HDWallet.isValidAddress('0x81148ea6b5DC73e6afb13FbCC7DA9B578b0A6B84'));

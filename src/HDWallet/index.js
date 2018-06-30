@@ -1,6 +1,7 @@
 import BIP39 from 'bip39';
 import compose from 'compose-funcs';
 import { HDNode, Wallet } from 'ethers';
+import Web3 from 'web3';
 
 import { log } from 'core/helpers';
 
@@ -31,7 +32,7 @@ class HDWallet {
   }
 
   static fromMnemonic(mnemonic) {
-    if (!BIP39.validateMnemonic(mnemonic))
+    if (!HDWallet.isValidMnemonic(mnemonic))
       throw new MnemonicErr(
         'Invalid mnemonic. ' +
           'Note: mnemonic phrase should be 12 words and implement BIP39.'
@@ -61,6 +62,14 @@ class HDWallet {
 
   static newWallet() {
     return Wallet.createRandom();
+  }
+
+  static isValidMnemonic(mnemonic){
+    return BIP39.validateMnemonic(mnemonic);
+  }
+
+  static isValidAddress(address){
+    return Web3.utils.isAddress(address); 
   }
 }
 
