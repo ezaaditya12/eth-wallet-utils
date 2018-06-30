@@ -3,7 +3,8 @@ import { CollectCMD, CollectCMDErr } from 'commands/collect';
 import { collectCases as test } from './test-cases';
 
 describe('Collect Command', () => {
-  const { setup, cases} = test.validateArgs;
+  const { validateArgs, validateDBProvider, validateProdDB } = test;
+  const { setup, cases } = validateArgs;
 
   beforeAll(() => {
     global.db = setup.db;
@@ -21,19 +22,18 @@ describe('Collect Command', () => {
     });
   });
 
-  const validateDBProvider = test.validateDBProvider;
-  (Object.values(validateDBProvider)).map(caseX => {
+  Object.values(validateDBProvider).map(caseX => {
     describe('Should validate DB Provider', () => {
       const { setup, cases } = caseX;
-  
+
       beforeAll(() => {
         global.db = setup.db;
       });
-    
+
       Object.values(cases).map(caseX => {
         it(caseX.name, async () => {
           try {
-            const {mnemonic, receiveAcc } = caseX;
+            const { mnemonic, receiveAcc } = caseX;
             await CollectCMD.cmd(mnemonic, receiveAcc);
           } catch (err) {
             expect(err).toBeInstanceOf(CollectCMDErr);
@@ -43,9 +43,20 @@ describe('Collect Command', () => {
       });
     });
   });
+
+  describe('Should have valid production DB', () => {
+    beforeAll(() => {
+      process.env.NODE_ENV = 'production';
+    });
+
+    it('Not throw CollectCMDErr', async () => {
+      try {
+        const { mnemonic, receiveAcc } = validateProdDB;
+        await CollectCMD.cmd(mnemonic, receiveAcc);
+      } catch (err) {
+        log('xxx', err);
+        expect(err).not.toBeInstanceOf(CollectCMDErr);
+      }
+    });
+  });
 });
-
-
-
-
-

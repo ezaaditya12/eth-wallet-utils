@@ -21,9 +21,12 @@ class CollectCMD {
    */
   static async cmd(_mnemonic, _receiveAcc) {
     const mnemonic = CollectCMD.useEnvVarIfMissing('MNEMONIC', _mnemonic);
-    const receiveAcc = CollectCMD.useEnvVarIfMissing('RECEIVE_ACCOUNT', _receiveAcc);
+    const receiveAcc = CollectCMD.useEnvVarIfMissing(
+      'RECEIVE_ACCOUNT',
+      _receiveAcc
+    );
     const db = CollectCMD.getDBProvider();
-    
+
     CollectCMD.checkInputs({ mnemonic, receiveAcc, db });
 
     const children = await db.getUnCollectedAccounts();
@@ -33,11 +36,7 @@ class CollectCMD {
 
   static getDBProvider() {
     if (process.env.NODE_ENV !== 'production') return global.db;
-    // return require('db');
-    return {
-      getUnCollectedAccounts: () => {},
-      updateUnCollectedAccounts: () => {},
-    };
+    return require('db');
   }
 
   static useEnvVarIfMissing(key, val) {
@@ -53,7 +52,8 @@ class CollectCMD {
         [
           'Missing inputs. Required fields:',
           '  + mnemonic',
-          '  + receiveAcc'
+          '  + receiveAcc',
+          '  + db: DB Provider'
         ].join(os.EOL)
       );
 
@@ -62,9 +62,8 @@ class CollectCMD {
         [
           'mnemonic phrase is invalid. Please check it.',
           `  + Input mnemonic: ${style.blue(mnemonic)}`,
-          `  + Using ${style.blue(
-            'quote'
-          )} if passing string with space in terminal`
+          `  + Using ${style.blue('quote')}` +
+            'when passing mnemonic in terminal'
         ].join(os.EOL)
       );
 
@@ -77,9 +76,11 @@ class CollectCMD {
       );
 
     ['getUnCollectedAccounts', 'updateUnCollectedAccounts'].map(fn => {
-      if(typeof db[fn] !== 'function')
-        throw new CollectCMDErr(`DB Provider required function: ${style.blue(fn)}`); 
-    });  
+      if (typeof db[fn] !== 'function')
+        throw new CollectCMDErr(
+          `DB Provider required function: ${style.blue(fn)}`
+        );
+    });
 
     return true;
   }

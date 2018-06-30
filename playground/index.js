@@ -43,5 +43,6 @@ import HDWallet from 'HDWallet';
 // log.info(HDWallet.isValidAddress('0x81148ea6b5DC73e6afb13FbCC7DA9B578b0A6B84'));
 
 /** Try dynamic require */
-// const _ETHBlock = require('ETHBlock');
+// const { default: _ETHBlock} = require('ETHBlock');
 // log.info(_ETHBlock);
+// _ETHBlock.watch();

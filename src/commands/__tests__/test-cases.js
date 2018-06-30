@@ -1,4 +1,5 @@
 import HDWallet from 'HDWallet';
+import { CollectCMDErr } from 'commands/collect';
 
 const mnemonic = HDWallet.newMnemonic();
 const receiveAcc = '0x81148ea6b5DC73e6afb13FbCC7DA9B578b0A6B84';
@@ -7,7 +8,7 @@ const collectCases = {
   validateDBProvider: {
     missingDB: {
       setup: {
-        db: null,
+        db: null
       },
       cases: {
         case1: {
@@ -21,9 +22,9 @@ const collectCases = {
     requiredFn: {
       setup: {
         db: {
-          getUnCollectedAccounts: () => {},
+          getUnCollectedAccounts: () => {}
           // updateUnCollectedAccounts: () => {},
-        },
+        }
       },
       cases: {
         case1: {
@@ -39,7 +40,7 @@ const collectCases = {
     setup: {
       db: {
         getUnCollectedAccounts: () => {},
-        updateUnCollectedAccounts: () => {},
+        updateUnCollectedAccounts: () => {}
       }
     },
     cases: {
@@ -57,6 +58,11 @@ const collectCases = {
       }
     }
   },
+  validateProdDB: {
+    err: CollectCMDErr,
+    mnemonic,
+    receiveAcc
+  }
 };
 
 export { collectCases };
