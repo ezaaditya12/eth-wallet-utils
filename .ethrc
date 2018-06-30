@@ -4,3 +4,4 @@ export ETH_NODE_SERVER=https://ropsten.infura.io/ur47Lz3XILJxaexyGLCi
 export WATCH_INTERVAL=60000
 export MNEMONIC="roast recipe soon hat couch mercy inspire dynamic pottery smooth bubble arrest"
 export RECEIVE_ACCOUNT=0x81148ea6b5DC73e6afb13FbCC7DA9B578b0A6B84
+export DB_FILE_PATH="/c/work-station/eth-wallet-utils/src/db.js"

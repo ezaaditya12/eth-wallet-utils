@@ -1,4 +1,5 @@
 import os from 'os';
+import path from 'path';
 import style from 'chalk';
 
 import { log } from 'core/helpers';
@@ -35,8 +36,11 @@ class CollectCMD {
   }
 
   static getDBProvider() {
-    if (process.env.NODE_ENV !== 'production') return global.db;
-    return require('db');
+    const { NODE_ENV , DB_FILE_PATH } = process.env;
+    if (NODE_ENV !== 'production')
+      return global.db;
+    
+    return require(DB_FILE_PATH);
   }
 
   static useEnvVarIfMissing(key, val) {
