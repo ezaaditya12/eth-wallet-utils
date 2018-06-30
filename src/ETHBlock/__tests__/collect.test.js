@@ -1,6 +1,6 @@
 import os from 'os';
 
-import { log, miniStore } from 'core/helpers';
+import { log } from 'core/helpers';
 import createTinyStore from 'core/store';
 import ETHBlock from 'ETHBlock';
 import HDWallet from 'HDWallet';

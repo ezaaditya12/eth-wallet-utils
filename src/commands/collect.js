@@ -5,27 +5,6 @@ import { log } from 'core/helpers';
 import ETHBlock from 'ETHBlock';
 import HDWallet from 'HDWallet';
 
-// import db from 'db';
-
-/** ============ DB integration ============ */
-// Fake to test first
-const db = {};
-
-db.getUnCollectedAccounts = () => {
-  return [
-    {
-      address: '',
-      derivePath: ''
-    }
-  ];
-};
-
-db.updateUnCollectedAccounts = () =>
-  log.info('[collect] Mark child\'s account as collected');
-
-const collectCb = db.updateUnCollectedAccounts;
-
-/** =============== Collect ============= */
 class CollectCMDErr extends Error {
   constructor(message) {
     super(`[CollectCMD] ${message}`);
@@ -40,26 +19,35 @@ class CollectCMD {
    * @param {string} mnemonic
    * @param {string} receiveAcc
    */
-  static async cmd(mnemonic, receiveAcc) {
-    mnemonic = CollectCMD.useEnvVariableIfMissing('MNEMONIC', mnemonic);
-    receiveAcc = CollectCMD.useEnvVariableIfMissing(
-      'RECEIVE_ACCOUNT',
-      receiveAcc
-    );
-    CollectCMD.checkInputs({ mnemonic, receiveAcc });
+  static async cmd(_mnemonic, _receiveAcc) {
+    const mnemonic = CollectCMD.useEnvVarIfMissing('MNEMONIC', _mnemonic);
+    const receiveAcc = CollectCMD.useEnvVarIfMissing('RECEIVE_ACCOUNT', _receiveAcc);
+    const db = CollectCMD.getDBProvider();
+    
+    CollectCMD.checkInputs({ mnemonic, receiveAcc, db });
 
     const children = await db.getUnCollectedAccounts();
+    const collectCb = db.updateUnCollectedAccounts;
     await ETHBlock.collect({ mnemonic, children, receiveAcc, collectCb });
   }
 
-  static useEnvVariableIfMissing(key, val) {
+  static getDBProvider() {
+    if (process.env.NODE_ENV !== 'production') return global.db;
+    // return require('db');
+    return {
+      getUnCollectedAccounts: () => {},
+      updateUnCollectedAccounts: () => {},
+    };
+  }
+
+  static useEnvVarIfMissing(key, val) {
     if (process.env.NODE_ENV !== 'production') return val;
     return val ? val : process.env[key];
   }
 
   static checkInputs(inputs = {}) {
-    const { mnemonic, receiveAcc } = inputs;
-    const shouldHaveVal = mnemonic && receiveAcc;
+    const { mnemonic, receiveAcc, db } = inputs;
+    const shouldHaveVal = mnemonic && receiveAcc && db;
     if (!shouldHaveVal)
       throw new CollectCMDErr(
         [
@@ -87,6 +75,11 @@ class CollectCMD {
           `  + Input address: ${style.blue(receiveAcc)}`
         ].join(os.EOL)
       );
+
+    ['getUnCollectedAccounts', 'updateUnCollectedAccounts'].map(fn => {
+      if(typeof db[fn] !== 'function')
+        throw new CollectCMDErr(`DB Provider required function: ${style.blue(fn)}`); 
+    });  
 
     return true;
   }

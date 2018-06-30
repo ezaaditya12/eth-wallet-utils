@@ -1,3 +1,4 @@
+export NODE_ENV=dev
 export NODE_PATH=src
 export ETH_NODE_SERVER=https://ropsten.infura.io/ur47Lz3XILJxaexyGLCi
 export WATCH_INTERVAL=60000
