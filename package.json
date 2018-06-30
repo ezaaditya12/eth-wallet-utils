@@ -17,6 +17,7 @@
   "dependencies": {
     "bip39": "^2.5.0",
     "chalk": "^2.4.1",
+    "commander": "^2.16.0",
     "compose-funcs": "^1.0.0",
     "ethereumjs-tx": "^1.3.5",
     "ethers": "^3.0.24",

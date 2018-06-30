@@ -6,7 +6,7 @@ import { composeAsync } from 'core/compose';
 import ETHBlock from 'ETHBlock';
 import HDWallet from 'HDWallet';
 
-/** Try on different HDWallet */
+/** Try on HDWallet libs*/
 // const hdkey = require('ethereumjs-wallet/hdkey');
 // const bip39 = require('bip39');
 // const mnemonic = 'unknown seed kit come final jacket final protect wedding inquiry spin silver';
@@ -36,8 +36,8 @@ import HDWallet from 'HDWallet';
 // log.info(Web3.utils.fromWei);
 
 /** New mnemonic */
-log.info(HDWallet.newMnemonic());
+// log.info(HDWallet.newMnemonic());
 
 /** Validate address */
-log.info(HDWallet.isValidAddress('xxx'));
-log.info(HDWallet.isValidAddress('0x81148ea6b5DC73e6afb13FbCC7DA9B578b0A6B84'));
+// log.info(HDWallet.isValidAddress('xxx'));
+// log.info(HDWallet.isValidAddress('0x81148ea6b5DC73e6afb13FbCC7DA9B578b0A6B84'));
