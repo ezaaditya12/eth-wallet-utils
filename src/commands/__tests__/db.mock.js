@@ -1,5 +1,7 @@
+import unCollectAccounts from './uncollect-accounts.mock.json';
+
 const db = {
-  getUnCollectedAccounts: () => {},
+  getUnCollectedAccounts: () => unCollectAccounts,
   updateUnCollectedAccounts: () => {}
 };
 

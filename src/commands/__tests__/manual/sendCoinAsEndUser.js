@@ -1,4 +1,6 @@
 import os from 'os';
+import fs from 'fs';
+import path from 'path';
 import style from 'chalk';
 
 import { log } from 'core/helpers';
@@ -71,8 +73,11 @@ const setup = async () => {
     });
   }, Promise.resolve());
 
+  const childInfoPath = path.join(__dirname, '..', 'uncollect-accounts.mock.json');
+  fs.writeFileSync(childInfoPath, JSON.stringify(childInfoArr, null, 2));
+
   log.info('[sendCoinAsEndUser] User sends coin completely');
-  log.info(style.bgGreenBright('[sendCoinAsEndUser] childInfoArr'));
+  log.info(style.bgGreenBright('[sendCoinAsEndUser] Mock data saved as:'), childInfoPath);
   log.info(childInfoArr);
 };
 

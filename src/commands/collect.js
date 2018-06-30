@@ -1,5 +1,4 @@
 import os from 'os';
-import path from 'path';
 import style from 'chalk';
 
 import { log } from 'core/helpers';
@@ -38,7 +37,6 @@ class CollectCMD {
   }
 
   static useEnvVarIfMissing(key, val) {
-    if (process.env.NODE_ENV !== 'production') return val;
     return val ? val : process.env[key];
   }
 
@@ -47,12 +45,7 @@ class CollectCMD {
     const shouldHaveVal = mnemonic && receiveAcc && db;
     if (!shouldHaveVal)
       throw new CollectCMDErr(
-        [
-          'Missing inputs. Required fields:',
-          '  + mnemonic',
-          '  + receiveAcc',
-          '  + db: DB Provider'
-        ].join(os.EOL)
+        ['Missing inputs. Required fields:', '  + mnemonic', '  + receiveAcc', '  + db: DB Provider'].join(os.EOL)
       );
 
     if (!HDWallet.isValidMnemonic(mnemonic))
@@ -60,24 +53,19 @@ class CollectCMD {
         [
           'mnemonic phrase is invalid. Please check it.',
           `  + Input mnemonic: ${style.blue(mnemonic)}`,
-          `  + Using ${style.blue('quote')}` +
-            'when passing mnemonic in terminal'
+          `  + Using ${style.blue('quote')}` + 'when passing mnemonic in terminal'
         ].join(os.EOL)
       );
 
     if (!HDWallet.isValidAddress(receiveAcc))
       throw new CollectCMDErr(
-        [
-          'Receive Account Address is invalid. Please check it.',
-          `  + Input address: ${style.blue(receiveAcc)}`
-        ].join(os.EOL)
+        ['Receive Account Address is invalid. Please check it.', `  + Input address: ${style.blue(receiveAcc)}`].join(
+          os.EOL
+        )
       );
 
     ['getUnCollectedAccounts', 'updateUnCollectedAccounts'].map(fn => {
-      if (typeof db[fn] !== 'function')
-        throw new CollectCMDErr(
-          `DB Provider required function: ${style.blue(fn)}`
-        );
+      if (typeof db[fn] !== 'function') throw new CollectCMDErr(`DB Provider required function: ${style.blue(fn)}`);
     });
 
     return true;
@@ -86,7 +74,7 @@ class CollectCMD {
 
 const collectCmd = program => {
   program
-    .command('collect <mnemonic> <receiveAcc>')
+    .command('collect <mnemonic> [receiveAcc]')
     .description(
       [
         'Collect all money from children\'s account',

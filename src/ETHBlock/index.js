@@ -68,46 +68,43 @@ class ETHBlock {
 
     const blockCb = silentErr(_cb1);
     const txCb = silentErr(cb2);
-    const watchPromise = ETHBlock._watch(tracker)({ blockCb, txCb });
-    tracker.set({ watchPromise });
+    ETHBlock._watch(tracker)({ blockCb, txCb });
 
     return tracker;
   }
 
   static _watch(tracker) {
-    return async ({ blockCb, txCb }) => {
-      try {
-        const { eth } = ETHBlock.initWeb3();
-        const latestBlockNo = await eth.getBlockNumber();
-        const syncedBlockNo = +Lock.read() || latestBlockNo - 1;
-        let synced = syncedBlockNo === latestBlockNo;
+    return ({ blockCb, txCb }) => {
+      const _watchPromise = (async () => {
+        try {
+          const { eth } = ETHBlock.initWeb3();
+          const latestBlockNo = +(await eth.getBlockNumber());
+          const syncedBlockNo = +Lock.read() || latestBlockNo - 1;
 
-        while (!synced && tracker.shouldRun()) {
-          const next = syncedBlockNo + 1;
-          await ETHBlock._readBlock(next, { blockCb, txCb });
-          synced = next === latestBlockNo;
-        }
+          let next = syncedBlockNo + 1;
+          let synced = syncedBlockNo === latestBlockNo;
 
-        log.info('[ETHBlock][watch] Synced');
-      } catch (err) {
-        log.info('[ETHBlock][watch]', err.message);
-      } finally {
-        if (tracker.shouldRun()) {
-          log.info('[ETHBlock][watch] Kick Off Next Watch');
-          ETHBlock.kickOffNextWatch(tracker, { blockCb, txCb });
+          while (!synced && tracker.shouldRun()) {
+            await ETHBlock._readBlock(next, { blockCb, txCb });
+            synced = next === latestBlockNo;
+            next = next + 1;
+          }
+        } catch (err) {
+          log.info('[ETHBlock][watch]', err.message);
+        } finally {
+          if (tracker.shouldRun()) {
+            log.info('[ETHBlock][watch] Kick Off Next Watch');
+            ETHBlock.kickOffNextWatch(tracker, { blockCb, txCb });
+          }
         }
-      }
+      })();
+      tracker.set({ _watchPromise });
     };
   }
 
   static kickOffNextWatch(tracker, { blockCb, txCb }) {
     const { WATCH_INTERVAL } = process.env;
-
-    const timerId = setTimeout(() => {
-      const watchPromise = ETHBlock._watch(tracker)({ blockCb, txCb });
-      tracker.set({ watchPromise });
-    }, WATCH_INTERVAL);
-
+    const timerId = setTimeout(() => ETHBlock._watch(tracker)({ blockCb, txCb }), WATCH_INTERVAL);
     tracker.set({ timerId });
   }
 
@@ -123,10 +120,7 @@ class ETHBlock {
     const { number: height, hash, transactions: txs } = block;
 
     log.info('[readBlock] height, hash:', height, hash);
-    log.info(
-      '[readBlock] txs[0]:',
-      `${JSON.stringify(txs[0]).substr(0, 50)}...`
-    );
+    log.info('[readBlock] txs:', `${JSON.stringify(txs).substr(0, 50)}...`);
 
     blockCb({ height, hash });
     txs.map(tx => txCb(tx));
@@ -145,9 +139,7 @@ class ETHBlock {
 
     tag = tag || 'collect';
     log(`[${tag}] 📜  Transaction Hash: ${style.blue(txHash)}`);
-    log(
-      `[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`
-    );
+    log(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
   };
 
   /**
@@ -171,11 +163,7 @@ class ETHBlock {
 
     if (amount < 0) {
       const balanceETH = utils.fromWei(balance);
-      log.info(
-        `[_transferAll] Child Account doesn't have enough coin to send. Balance: ${style.blue(
-          balanceETH
-        )} ETH`
-      );
+      log.info(`[_transferAll] Child Account doesn't have enough coin to send. Balance: ${style.blue(balanceETH)} ETH`);
       return;
     }
 
@@ -250,9 +238,7 @@ class ETHBlock {
     const serializedTx = tx.serialize();
 
     const { eth } = ETHBlock.initWeb3();
-    const promiEvent = eth.sendSignedTransaction(
-      `0x${serializedTx.toString('hex')}`
-    );
+    const promiEvent = eth.sendSignedTransaction(`0x${serializedTx.toString('hex')}`);
 
     return await promiEvent.then(receipt => receipt.transactionHash);
   }
@@ -277,7 +263,7 @@ class ETHBlock {
     log('[collect] mnemonic:', style.blue(receiveAcc));
     log('[collect] Receive Account:', style.blue(receiveAcc));
     log('[collect] Looking children\'s account...');
-    log('[collect] This often take ~ 1 minute...');
+    log('[collect] This often take ~ 1 minute');
 
     const collectCb = silentErr(_cb);
     const masterNode = HDWallet.fromMnemonic(mnemonic);
@@ -292,30 +278,25 @@ class ETHBlock {
 
       const sameAdr = address === wallet.address;
       if (!sameAdr) {
-        log.info(
-          '[collect][WARN] Find child ERR: Address & Derive Path not match'
-        );
+        log.info('[collect][WARN] Find child ERR: Address & Derive Path not match');
       }
 
       return prvKey;
     });
 
     // Use private key to send coin
+    log('[collect] Starting transfer...');
     const txHashes = await Promise.all(
-      prvKeys.map(prvKey =>
-        ETHBlock._transferAll({ prvKey, receiveAcc, transferCb: collectCb })
-      )
+      prvKeys.map(prvKey => ETHBlock._transferAll({ prvKey, receiveAcc, transferCb: collectCb }))
     );
 
     const validTxHashed = txHashes.filter(Boolean);
+    log.info('[collect] Transaction Hashes:');
+    log.info(validTxHashed);
+    
     const receiveAccBalance = await ETHBlock.getBalanceInETH(receiveAcc);
-    log('[collect] txHashes:', validTxHashed);
     log(`[collect] 💼  Receive Account Address: ${style.blue(receiveAcc)}`);
-    log(
-      `[collect] 💰  Receive Account Balance: ${style.blue(
-        receiveAccBalance
-      )} ETH`
-    );
+    log(`[collect] 💰  Receive Account Balance: ${style.blue(receiveAccBalance)} ETH`);
     log('[collect] Finished.');
   }
 }
