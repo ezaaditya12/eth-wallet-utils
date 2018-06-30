@@ -5,7 +5,7 @@ import ETHBlock from 'ETHBlock';
 import { watchBlock as test } from 'ETHBlock/__tests__/test-cases';
 import { log, delay } from 'core/helpers';
 
-describe.only('Watch Latest Block', () => {
+describe('Watch Latest Block', () => {
   const case1 = test.case1;
 
   const blockCb = jest.fn();
@@ -51,28 +51,28 @@ describe.only('Watch Latest Block', () => {
   });
 });
 
-// describe('Watch Keep Looping', () => {
-//   const case2 = test.case2;
+describe('Watch Keep Looping', () => {
+  const case2 = test.case2;
 
-//   const blockCb = jest.fn();
-//   const txCb = jest.fn();
+  const blockCb = jest.fn();
+  const txCb = jest.fn();
 
-//   const blockMCs = blockCb.mock.calls;
-//   const txMCs = txCb.mock.calls;
+  const blockMCs = blockCb.mock.calls;
+  const txMCs = txCb.mock.calls;
 
-//   const watchTime = moment.duration(case2.WATCH_TIMEOUT);
+  const watchTime = moment.duration(case2.WATCH_TIMEOUT);
 
-//   describe(`Test Watch Block in ${watchTime.humanize()}`, () => {
-//     beforeAll(async () => {
-//       // Run ETHBlock.watch in specified time
-//       const tracker = ETHBlock.watch({ blockCb, txCb });
-//       await delay(case2.WATCH_TIMEOUT);
-//       ETHBlock.unWatch(tracker);
-//     }, case2.WATCH_TIMEOUT + 2 * 1000);
+  describe(`Test Watch Block in ${watchTime.humanize()}`, () => {
+    beforeAll(async () => {
+      // Run ETHBlock.watch in specified time
+      const tracker = ETHBlock.watch({ blockCb, txCb });
+      await delay(case2.WATCH_TIMEOUT);
+      ETHBlock.unWatch(tracker);
+    }, case2.WATCH_TIMEOUT + 2 * 1000);
 
-//     it('Should call blockCb & txCb a lot', () => {
-//       expect(blockMCs.length).toBeGreaterThan(case2.blockCbCalledTimes);
-//       expect(txMCs.length).toBeGreaterThan(case2.txCbCalledTimes);
-//     });
-//   });
-// });
+    it('Should call blockCb & txCb a lot', () => {
+      expect(blockMCs.length).toBeGreaterThan(case2.blockCbCalledTimes);
+      expect(txMCs.length).toBeGreaterThan(case2.txCbCalledTimes);
+    });
+  });
+});

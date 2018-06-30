@@ -137,9 +137,8 @@ class ETHBlock {
     const _amountEth = utils.fromWei(`${amount}`, 'ether');
     const amountETH = Number(_amountEth).toFixed(5);
 
-    tag = tag || 'collect';
-    log(`[${tag}] 📜  Transaction Hash: ${style.blue(txHash)}`);
-    log(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
+    log.write(tag)(`[${tag}] 📜  Transaction Hash: ${style.blue(txHash)}`);
+    log.write(tag)(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
   };
 
   /**
@@ -176,7 +175,7 @@ class ETHBlock {
     };
 
     const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
-    ETHBlock._logTransfer({ from, receiveAcc, amount, txHash });
+    ETHBlock._logTransfer({ from, receiveAcc, amount, txHash, tag: 'collect' });
     transferCb({ from, receiveAcc, amount, txHash });
     return txHash;
   }
@@ -260,10 +259,10 @@ class ETHBlock {
    * @memberof ETHBlock
    */
   static async collect({ mnemonic, children, receiveAcc, collectCb: _cb }) {
-    log('[collect] mnemonic:', style.blue(receiveAcc));
-    log('[collect] Receive Account:', style.blue(receiveAcc));
-    log('[collect] Looking children\'s account...');
-    log('[collect] This often take ~ 1 minute');
+    log.write('[collect]')('[collect] mnemonic:', style.blue(receiveAcc));
+    log.write('[collect]')('[collect] Receive Account:', style.blue(receiveAcc));
+    log.write('[collect]')('[collect] Looking children\'s account...');
+    log.write('[collect]')('[collect] This often take ~ 1 minute');
 
     const collectCb = silentErr(_cb);
     const masterNode = HDWallet.fromMnemonic(mnemonic);
@@ -285,7 +284,7 @@ class ETHBlock {
     });
 
     // Use private key to send coin
-    log('[collect] Starting transfer...');
+    log.write('[collect]')('[collect] Starting transfer...');
     const txHashes = await Promise.all(
       prvKeys.map(prvKey => ETHBlock._transferAll({ prvKey, receiveAcc, transferCb: collectCb }))
     );
@@ -295,9 +294,9 @@ class ETHBlock {
     log.info(validTxHashed);
     
     const receiveAccBalance = await ETHBlock.getBalanceInETH(receiveAcc);
-    log(`[collect] 💼  Receive Account Address: ${style.blue(receiveAcc)}`);
-    log(`[collect] 💰  Receive Account Balance: ${style.blue(receiveAccBalance)} ETH`);
-    log('[collect] Finished.');
+    log.write('[collect]')(`[collect] 💼  Receive Account Address: ${style.blue(receiveAcc)}`);
+    log.write('[collect]')(`[collect] 💰  Receive Account Balance: ${style.blue(receiveAccBalance)} ETH`);
+    log.write('[collect]')('[collect] Finished.');
   }
 }
 

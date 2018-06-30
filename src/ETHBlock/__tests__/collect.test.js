@@ -6,7 +6,16 @@ import ETHBlock from 'ETHBlock';
 import HDWallet from 'HDWallet';
 import { collectCases as test } from './test-cases';
 
-const randomChild = arr => arr[Math.floor(Math.random() * arr.length)];
+const Pick  = arr => {
+  let index = 0;
+  return {
+    get(){
+      const child = arr[index];
+      index++;
+      return child;
+    }
+  };
+};
 
 describe('Collect money from all children account', () => {
   const case1 = test.case1;
@@ -88,12 +97,13 @@ describe('Collect money from all children account', () => {
 
       // End user send to random child's account
       // @WARN: Spend concurrently on same must transaction IN ORDER
+      const pickOne = Pick(children);
       await endUserSpends.reduce(async (prevSend, amount) => {
         await prevSend;
         return ETHBlock.send({
           amount,
           from: endUserPrv,
-          to: randomChild(children).address
+          to: pickOne.get().address
         });
       }, Promise.resolve());
       log.info('[collect.test] User sends coin completely');

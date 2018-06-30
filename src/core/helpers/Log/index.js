@@ -1,13 +1,9 @@
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
-import util from 'util';
 import moment from 'moment';
 
 class Log {
-  static appendFile = util.promisify(fs.appendFile);
-  static waitWrite = Promise.resolve();
-
   static createIfNotExist = path => {
     if (!fs.existsSync(path)) fs.writeFileSync(path, '');
     return path;
@@ -21,30 +17,28 @@ class Log {
     return `[${dateTime}] ${argStrings.join(' ')}${os.EOL}`;
   };
 
-  static getLogPath = () => {
-    const toDay = moment().format('YYYY-MM-DD');
-    return path.join('logs', `${toDay}.log`);
+  static getLogPath = (tag = '') => {
+    const toDay = moment().format('X');
+    return path.join('logs', `${toDay}_${tag}.log`);
   };
 
   static log = (...args) => {
-    console.log(...args);
-    Log.waitWrite = Log.waitWrite.then(() =>
-      Log.appendFile(
-        Log.createIfNotExist(Log.getLogPath()),
-        Log.formatWithTime(args)
-      )
-    );
+    const { NODE_ENV} = process.env;
+    (NODE_ENV !== 'production') && console.log(...args);
   };
 
   static info = (...args) => {
-    const { NODE_ENV} = process.env;
-    if(NODE_ENV === 'production') return;
-
     Log.log(...args);
+  }
+
+  static write = tag => (...args) => {
+    console.log(...args);
+    fs.appendFileSync(Log.createIfNotExist(Log.getLogPath(tag)), Log.formatWithTime(args));
   }
 }
 
 // Utils
 Log.log.info = Log.info;
+Log.log.write = Log.write;
 
 export default Log.log;

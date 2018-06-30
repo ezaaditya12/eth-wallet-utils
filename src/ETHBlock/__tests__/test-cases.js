@@ -34,7 +34,7 @@ const collectCases = {
     endUserSpends: [0.005, 0.008],
     receiveAcc: '0x81148ea6b5DC73e6afb13FbCC7DA9B578b0A6B84',
     HASH_LENGTH,
-    WAIT_COLLECT_TIMEOUT: 150 * 1000, //Wait for 2 spends
+    WAIT_COLLECT_TIMEOUT: 200 * 1000, //Wait for collect 2 spends
     WAIT_INFO_TIMEOUT: 7 * 1000
   }
 };
