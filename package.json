@@ -57,7 +57,7 @@
   },
   "lint-staged": {
     "*.js": [
-      "prettier --write --single-quote --print-width 80",
+      "prettier --write --single-quote --print-width 120",
       "eslint --fix",
       "git add"
     ]
@@ -111,7 +111,9 @@
     },
     "verbose": true,
     "testPathIgnorePatterns": [
-      "test-cases.js"
+      "test-cases.js$",
+      "__tests__/manual/.*.js$",
+      "__tests__/.*.mock.js$"
     ]
   }
 }

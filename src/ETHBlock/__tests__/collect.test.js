@@ -65,7 +65,7 @@ describe('Collect money from all children account', () => {
     const collectMCs = collectCb.mock.calls;
 
     beforeAll(async () => {
-      log(
+      log.info(
         [
           '[collect.test] Setup scenario',
           '[collect.test]   + End user send coin to child address of HD Wallet',

@@ -20,12 +20,9 @@ class CollectCMD {
    * @param {string} mnemonic
    * @param {string} receiveAcc
    */
-  static async cmd(_mnemonic, _receiveAcc) {
-    const mnemonic = CollectCMD.useEnvVarIfMissing('MNEMONIC', _mnemonic);
-    const receiveAcc = CollectCMD.useEnvVarIfMissing(
-      'RECEIVE_ACCOUNT',
-      _receiveAcc
-    );
+  static async cmd(mnemonic, receiveAcc) {
+    mnemonic = CollectCMD.useEnvVarIfMissing('MNEMONIC', mnemonic);
+    receiveAcc = CollectCMD.useEnvVarIfMissing('RECEIVE_ACCOUNT', receiveAcc);
     const db = CollectCMD.getDBProvider();
 
     CollectCMD.checkInputs({ mnemonic, receiveAcc, db });
@@ -36,10 +33,7 @@ class CollectCMD {
   }
 
   static getDBProvider() {
-    const { NODE_ENV , DB_FILE_PATH } = process.env;
-    if (NODE_ENV !== 'production')
-      return global.db;
-    
+    const { DB_FILE_PATH } = process.env;
     return require(DB_FILE_PATH);
   }
 
