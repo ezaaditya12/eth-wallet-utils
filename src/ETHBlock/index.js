@@ -3,6 +3,7 @@ import compose from 'compose-funcs';
 import EthereumTx from 'ethereumjs-tx';
 import { Wallet } from 'ethers';
 import style from 'chalk';
+import moment from 'moment';
 
 import Network from 'ETHBlock/Network';
 import Lock from 'ETHBlock/Lock';
@@ -94,7 +95,7 @@ class ETHBlock {
         } finally {
           if (tracker.shouldRun()) {
             log.info('[ETHBlock][watch] Kick Off Next Watch');
-            ETHBlock.kickOffNextWatch(tracker, { blockCb, txCb });
+            ETHBlock.kickOffNextWatch(tracker)({ blockCb, txCb });
           }
         }
       })();
@@ -102,10 +103,12 @@ class ETHBlock {
     };
   }
 
-  static kickOffNextWatch(tracker, { blockCb, txCb }) {
-    const { WATCH_INTERVAL } = process.env;
-    const timerId = setTimeout(() => ETHBlock._watch(tracker)({ blockCb, txCb }), WATCH_INTERVAL);
-    tracker.set({ timerId });
+  static kickOffNextWatch(tracker){
+    return ({ blockCb, txCb }) => {
+      const { WATCH_INTERVAL } = process.env;
+      const timerId = setTimeout(() => ETHBlock._watch(tracker)({ blockCb, txCb }), WATCH_INTERVAL);
+      tracker.set({ timerId });
+    };
   }
 
   static unWatch(tracker) {
@@ -137,8 +140,8 @@ class ETHBlock {
     const _amountEth = utils.fromWei(`${amount}`, 'ether');
     const amountETH = Number(_amountEth).toFixed(5);
 
-    log.write(tag)(`[${tag}] 📜  Transaction Hash: ${style.blue(txHash)}`);
-    log.write(tag)(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
+    log.report(tag)(`[${tag}] 📜  Transaction Hash: ${style.blue(txHash)}`);
+    log.report(tag)(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
   };
 
   /**
@@ -259,10 +262,13 @@ class ETHBlock {
    * @memberof ETHBlock
    */
   static async collect({ mnemonic, children, receiveAcc, collectCb: _cb }) {
-    log.write('[collect]')('[collect] mnemonic:', style.blue(receiveAcc));
-    log.write('[collect]')('[collect] Receive Account:', style.blue(receiveAcc));
-    log.write('[collect]')('[collect] Looking children\'s account...');
-    log.write('[collect]')('[collect] This often take ~ 1 minute');
+    const logName = 'collect-coin_' + moment().format('X') + '.log';
+    const report = log.report(logName);
+    
+    report('[collect] mnemonic:', style.blue(receiveAcc));
+    report('[collect] Receive Account:', style.blue(receiveAcc));
+    report('[collect] Looking children\'s account...');
+    report('[collect] This often take ~ 1 minute');
 
     const collectCb = silentErr(_cb);
     const masterNode = HDWallet.fromMnemonic(mnemonic);
@@ -284,7 +290,7 @@ class ETHBlock {
     });
 
     // Use private key to send coin
-    log.write('[collect]')('[collect] Starting transfer...');
+    report('[collect] Starting transfer...');
     const txHashes = await Promise.all(
       prvKeys.map(prvKey => ETHBlock._transferAll({ prvKey, receiveAcc, transferCb: collectCb }))
     );
@@ -294,9 +300,10 @@ class ETHBlock {
     log.info(validTxHashed);
     
     const receiveAccBalance = await ETHBlock.getBalanceInETH(receiveAcc);
-    log.write('[collect]')(`[collect] 💼  Receive Account Address: ${style.blue(receiveAcc)}`);
-    log.write('[collect]')(`[collect] 💰  Receive Account Balance: ${style.blue(receiveAccBalance)} ETH`);
-    log.write('[collect]')('[collect] Finished.');
+    report('[collect] 💼  Receive Account Address:', style.blue(receiveAcc));
+    report('[collect] 💰  Receive Account Balance:', style.blue(receiveAccBalance), 'ETH');
+    report('[collect] 📝  Report file:', style.blue(`logs/${logName}`));
+    report('[collect] Finished.');
   }
 }
 

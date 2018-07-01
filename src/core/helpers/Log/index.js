@@ -17,9 +17,9 @@ class Log {
     return `[${dateTime}] ${argStrings.join(' ')}${os.EOL}`;
   };
 
-  static getLogPath = (tag = '') => {
-    const toDay = moment().format('X');
-    return path.join('logs', `${toDay}_${tag}.log`);
+  static getLogPath = logName => {
+    logName = logName || moment().format('YYYY-MM-DD');
+    return path.join('logs', `${logName}.log`);
   };
 
   static log = (...args) => {
@@ -31,14 +31,14 @@ class Log {
     Log.log(...args);
   }
 
-  static write = tag => (...args) => {
+  static report = logName => (...args) => {
     console.log(...args);
-    fs.appendFileSync(Log.createIfNotExist(Log.getLogPath(tag)), Log.formatWithTime(args));
+    fs.appendFileSync(Log.createIfNotExist(Log.getLogPath(logName)), Log.formatWithTime(args));
   }
 }
 
 // Utils
 Log.log.info = Log.info;
-Log.log.write = Log.write;
+Log.log.report = Log.report;
 
 export default Log.log;
