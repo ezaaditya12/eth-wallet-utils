@@ -20,7 +20,8 @@ describe('Collect Command', () => {
   it('Should have valid DB', async () => {
     try {
       const { mnemonic, receiveAcc } = validateProdDB;
-      await CollectCMD.cmd(mnemonic, receiveAcc);
+      const db = CollectCMD.getDBProvider();
+      CollectCMD.checkInputs({db, mnemonic, receiveAcc});
     } catch (err) {
       expect(err).not.toBeInstanceOf(validateProdDB.Err);
     }
