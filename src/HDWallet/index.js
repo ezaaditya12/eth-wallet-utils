@@ -16,7 +16,14 @@ class MnemonicErr extends Error {
 class HDWallet {
   static BIP44 = 'm/44\'/60\'/0\'/0';
 
-  static generate({ offset, limit }) {
+  static generate(mnemonic){
+    return ({offset, limit}) => {
+      const masterNode = HDWallet.fromMnemonic(mnemonic);
+      return HDWallet._generate({offset, limit})(masterNode);
+    };
+  }
+
+  static _generate({ offset, limit }) {
     return masterNode =>
       Array(limit)
         .fill(null)

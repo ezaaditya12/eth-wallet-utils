@@ -54,7 +54,7 @@ const setup = async () => {
   );
 
   const hdWallet = HDWallet.fromMnemonic(mnemonic);
-  const children = HDWallet.generate({ offset: 0, limit: 10 })(hdWallet);
+  const children = HDWallet._generate({ offset: 0, limit: 10 })(hdWallet);
 
   // End user send to random child's account
   // @WARN: Spend concurrently on same must transaction IN ORDER\
@@ -66,7 +66,7 @@ const setup = async () => {
       address: child.address,
       derivePath: child.derivePath
     });
-    return ETHBlock.send({
+    return ETHBlock._send({
       amount,
       from: endUserPrv,
       to: child.address

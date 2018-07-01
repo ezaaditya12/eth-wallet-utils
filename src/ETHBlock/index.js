@@ -131,7 +131,7 @@ class ETHBlock {
     Lock.write(height);
   }
 
-  static _logTransfer = ({ from, receiveAcc, amount, txHash, tag }) => {
+  static _logTransfer = ({ from, receiveAcc, amount, txHash, logName }) => {
     const { utils } = ETHBlock.initWeb3();
     const shorten = str => str.substr(0, 16);
 
@@ -140,8 +140,9 @@ class ETHBlock {
     const _amountEth = utils.fromWei(`${amount}`, 'ether');
     const amountETH = Number(_amountEth).toFixed(5);
 
-    log.report(tag)(`[${tag}] 📜  Transaction Hash: ${style.blue(txHash)}`);
-    log.report(tag)(`[${tag}] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
+    const report = log.report(logName);
+    report(`[collect] 📜  Transaction Hash: ${style.blue(txHash)}`);
+    report(`[collect] 💰  ${fromAcc}  ➡️   ${toAcc} : ${style.blue(amountETH)} ETH`);
   };
 
   /**
@@ -152,7 +153,7 @@ class ETHBlock {
    * @returns
    * @memberof ETHBlock
    */
-  static async _transferAll({ prvKey, receiveAcc, transferCb }) {
+  static async _transferAll({ prvKey, receiveAcc, transferCb, logName }) {
     const { eth, utils } = ETHBlock.initWeb3();
 
     const from = HDWallet.walletFromPrv(prvKey).address;
@@ -178,7 +179,7 @@ class ETHBlock {
     };
 
     const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
-    ETHBlock._logTransfer({ from, receiveAcc, amount, txHash, tag: 'collect' });
+    ETHBlock._logTransfer({ from, receiveAcc, amount, txHash, logName });
     transferCb({ from, receiveAcc, amount, txHash });
     return txHash;
   }
@@ -199,7 +200,7 @@ class ETHBlock {
    *
    * @param {*} param0
    */
-  static async send({ from: prvKey, to, amount }) {
+  static async _send({ from: prvKey, to, amount }) {
     const { eth, utils } = ETHBlock.initWeb3();
 
     const from = HDWallet.walletFromPrv(prvKey).address;
@@ -216,12 +217,13 @@ class ETHBlock {
     };
 
     const txHash = await ETHBlock._createTransaction({ prvKey, txInfo });
+    const logName = 'send_' + moment().format('X') + '.log';
     ETHBlock._logTransfer({
       from,
       txHash,
       receiveAcc: to,
       amount: amountInWei,
-      tag: 'send'
+      logName,
     });
     return txHash;
   }
@@ -292,14 +294,17 @@ class ETHBlock {
     // Use private key to send coin
     report('[collect] Starting transfer...');
     const txHashes = await Promise.all(
-      prvKeys.map(prvKey => ETHBlock._transferAll({ prvKey, receiveAcc, transferCb: collectCb }))
+      prvKeys.map(prvKey => ETHBlock._transferAll({ prvKey, receiveAcc, transferCb: collectCb, logName }))
     );
 
     const validTxHashed = txHashes.filter(Boolean);
+    const receiveAccBalance = await ETHBlock.getBalanceInETH(receiveAcc);
+
     log.info('[collect] Transaction Hashes:');
     log.info(validTxHashed);
     
-    const receiveAccBalance = await ETHBlock.getBalanceInETH(receiveAcc);
+    report('');
+    report('[collect] ===== Summary =====');
     report('[collect] 💼  Receive Account Address:', style.blue(receiveAcc));
     report('[collect] 💰  Receive Account Balance:', style.blue(receiveAccBalance), 'ETH');
     report('[collect] 📝  Report file:', style.blue(`logs/${logName}`));

@@ -83,7 +83,7 @@ describe('Collect money from all children account', () => {
       );
 
       const hdWallet = HDWallet.fromMnemonic(mnemonic);
-      const children = HDWallet.generate({ offset: 0, limit: 10 })(hdWallet);
+      const children = HDWallet._generate({ offset: 0, limit: 10 })(hdWallet);
 
       // Store balance to compare in test
       const [uETH, rETH] = await Promise.all([
@@ -100,7 +100,7 @@ describe('Collect money from all children account', () => {
       const pickOne = Pick(children);
       await endUserSpends.reduce(async (prevSend, amount) => {
         await prevSend;
-        return ETHBlock.send({
+        return ETHBlock._send({
           amount,
           from: endUserPrv,
           to: pickOne.get().address
