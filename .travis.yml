@@ -10,5 +10,7 @@ before_script:
 script:
   - yarn test --ci
   - yarn test --coverage
+env:
+  - DB_FILE_PATH: $TRAVIS_BUILD_DIR/src/commands/__tests__/db.mock.js
 notifications:
   email: false
