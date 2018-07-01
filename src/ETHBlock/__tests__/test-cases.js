@@ -21,8 +21,8 @@ const watchBlock = {
   },
   case2: {
     WATCH_TIMEOUT: 5 * 60 * 1000,
-    blockCbCalledTimes: 30, // Block Time: ~10s
-    txCbCalledTimes: 30 * 2, // Txs in Block: ~2
+    blockCbCalledTimes: 20, // Block Time: ~10s
+    txCbCalledTimes: 20 * 2, // Txs in Block: ~2
   }
 };
 
