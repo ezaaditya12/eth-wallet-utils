@@ -1,6 +1,6 @@
 # ETH Utils
 
-
+[![npm version](https://badge.fury.io/js/eth-wallet-utils.svg)](https://badge.fury.io/js/eth-wallet-utils)
 [![Build Status](https://travis-ci.org/hoanganh25991/eth-wallet-utils.svg?branch=master)](https://travis-ci.org/hoanganh25991/eth-wallet-utils)
 
 Case study:

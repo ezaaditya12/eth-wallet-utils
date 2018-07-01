@@ -3,13 +3,8 @@ node_js:
   - "8.11.3"
 cache: yarn
 before_script:
-  - node --version
-  - yarn --version
   - source .ethrc
-  - printenv NODE_PATH
-  - export DB_FILE_PATH=$TRAVIS_BUILD_DIR/src/commands/__tests__/db.mock.js
 script:
-  - yarn test --ci
-  - yarn test --coverage
+  - yarn test --ci --detectOpenHandles --silent --coverage
 notifications:
   email: false

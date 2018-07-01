@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "address": "0x31853d9B2c48e2aFCeE09a77540CFF9a6C4D195d",
+    "derivePath": "m/44'/60'/0'/0/9"
+  },
+  {
+    "address": "0x76816Fa8859Cc9092a116CFf1E51e6685A62A55e",
+    "derivePath": "m/44'/60'/0'/0/1"
+  }
+]
