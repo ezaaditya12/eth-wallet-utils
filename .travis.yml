@@ -7,10 +7,9 @@ before_script:
   - yarn --version
   - source .ethrc
   - printenv NODE_PATH
+  - export DB_FILE_PATH=$TRAVIS_BUILD_DIR/src/commands/__tests__/db.mock.js
 script:
   - yarn test --ci
   - yarn test --coverage
-env:
-  - DB_FILE_PATH: $TRAVIS_BUILD_DIR/src/commands/__tests__/db.mock.js
 notifications:
   email: false
