@@ -1,6 +1,7 @@
 {
   "name": "eth-utils",
   "version": "0.1.0",
+  "license": "MIT",
   "engines": {
     "node": ">= 8.11.x"
   },

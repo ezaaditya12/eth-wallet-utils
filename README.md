@@ -9,7 +9,7 @@ Solution: Simple hold `mnemonic` phrase, we can:
 
 + From __mnemonic__ phrase > Create __HD Wallet__
 + From __HD Wallet__ > Generate thousands __wallets__
-+ From __HD Wallet__ > Collect back all coin from generated __wallets__
++ From __HD Wallet__ > Collect back all coins from generated __wallets__
 
 ## Usage
 
@@ -40,7 +40,7 @@ yarn collect "roast recipe soon hat couch mercy inspire dynamic pottery smooth b
 ```
 
 + [Test Cases Info](src/commands/__tests__/manual/test-cases.js)
-+ Log file: When finished, log file save in `logs` folder as `collect-coin_[time].log`
++ Log file: When finished, log file saved in `logs` folder as `collect-coin_[timestamp].log`
 
 ## Test
 
@@ -52,7 +52,7 @@ yarn collect "roast recipe soon hat couch mercy inspire dynamic pottery smooth b
 yarn test
 ```
 
-+ Test all cases without `log` from console
++ Test all cases without `console.log`
 
 ```bash
 yarn test --silent
@@ -84,3 +84,17 @@ Update code as `describe.skip` on these test suites
 Long-running test suites:
 
 + [Watch Block](src/ETHBlock/__tests__/watch-block.test.js)
+
+## Screenshots
+
+### Collect Coin Log
+
+![Collect Log](docs/images/collect-log-2018-07-01_133112.png)
+
+### Test Console
+
+![Test Cases](docs/images/test-console2018-07-01_131601.png)
+
+### Test Coverage
+
+![Test Coverage](docs/images/coverage-2018-07-01_131601.png)
