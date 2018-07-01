@@ -1,12 +1,17 @@
 {
   "name": "eth-utils",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "license": "MIT",
   "engines": {
     "node": ">= 8.11.x"
   },
   "bin": {
     "ETHUtils": "dist/commands/index.js"
+  },
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hoanganh25991/eth-wallet-utils"
   },
   "scripts": {
     "prepare": "echo 'Please run: source .ethrc'",

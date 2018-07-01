@@ -1,5 +1,8 @@
 # ETH Utils
 
+
+[![Build Status](https://travis-ci.org/hoanganh25991/eth-wallet-utils.svg?branch=master)](https://travis-ci.org/hoanganh25991/eth-wallet-utils)
+
 Case study:
 
 + eCommerce site needs wallet for each customer
