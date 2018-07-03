@@ -8,3 +8,4 @@ script:
   - yarn test --ci --detectOpenHandles --silent --coverage
 notifications:
   email: false
+  after_success: 'yarn coveralls'
