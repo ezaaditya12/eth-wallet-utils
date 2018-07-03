@@ -5,7 +5,7 @@ cache: yarn
 before_script:
   - source .ethrc
 script:
-  - yarn test --ci --detectOpenHandles --silent --coverage
+  - yarn test --ci --detectOpenHandles --silent --coverage --coverageReporters=text-lcov
 notifications:
   email: false
   after_success: 'yarn coveralls'
