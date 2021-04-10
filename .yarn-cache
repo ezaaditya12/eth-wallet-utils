@@ -1,0 +1,1 @@
+yarn call src/commands/__tests__/manual/sendCoinAsEndUser.js
